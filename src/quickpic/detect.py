@@ -66,7 +66,11 @@ class YuNetDetector:
 
 
 class HaarDetector:
-    """Viola-Jones Haar cascade (2001), the classical baseline. Gives boxes only, no landmarks."""
+    """Viola-Jones Haar cascade (2001), the classical baseline. Gives boxes only, no landmarks.
+
+    Contrast is normalised with CLAHE (local histogram equalisation) rather than
+    global equalisation, which large uniform regions such as walls distort.
+    """
 
     def __init__(self, max_side: int = 640, min_neighbors: int = 5):
         self.name = "haar"
@@ -74,10 +78,11 @@ class HaarDetector:
         self.min_neighbors = min_neighbors
         path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
         self.model = cv2.CascadeClassifier(path)
+        self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
 
     def detect(self, image: np.ndarray) -> list[Face]:
         small, scale = resize_to_max_side(image, self.max_side)
-        gray = cv2.equalizeHist(cv2.cvtColor(small, cv2.COLOR_BGR2GRAY))
+        gray = self.clahe.apply(cv2.cvtColor(small, cv2.COLOR_BGR2GRAY))
         boxes, _, weights = self.model.detectMultiScale3(
             gray, scaleFactor=1.1, minNeighbors=self.min_neighbors, outputRejectLevels=True
         )

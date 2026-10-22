@@ -12,6 +12,7 @@ import pytest
 
 from quickpic.align import align
 from quickpic.imageio import load_image
+from quickpic.tiling import iou
 from quickpic.zoo import MODELS_DIR, load_detector, load_embedder
 
 pytestmark = pytest.mark.skipif(
@@ -34,8 +35,13 @@ def test_cnn_detectors_find_all_six_faces(image, name):
     assert all(f.landmarks is not None and f.landmarks.shape == (5, 2) for f in faces)
 
 
-def test_haar_finds_most_faces(image):
-    assert len(load_detector("haar").detect(image)) >= 4
+def test_haar_finds_half_the_faces(image):
+    truth = np.array([f.box for f in load_detector("scrfd_10g").detect(image)])
+    boxes = np.array([f.box for f in load_detector("haar").detect(image)])
+
+    matched = sum(bool((iou(box, boxes) >= 0.4).any()) for box in truth)
+
+    assert matched >= 3
 
 
 def test_tiling_recovers_small_faces_in_a_large_photo(image):
