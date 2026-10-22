@@ -1,0 +1,29 @@
+__pycache__/
+*.py[oc]
+*.egg-info
+build/
+dist/
+.venv/
+.ipynb_checkpoints/
+.DS_Store
+
+# Faces never enter version control: class data, public datasets, weights.
+data/
+models/
+*.jpg
+*.jpeg
+*.png
+*.heic
+*.webp
+!docs/assets/**
+
+# Local runtime state
+*.sqlite3
+web/media/
+
+# LaTeX build output
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg

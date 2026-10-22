@@ -1,0 +1,38 @@
+[project]
+name = "quickpic"
+version = "0.1.0"
+description = "Open-set face recognition for classroom attendance from a single photograph"
+authors = [
+    { name = "Tanish Mittal", email = "tanish.20233288@mnnit.ac.in" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "insightface>=2.1",
+    "numpy>=2.5.4",
+    "onnxruntime>=1.31.0",
+    "opencv-python>=5.0.0.93",
+    "scikit-image>=0.26.0",
+    "scikit-learn>=1.9.1",
+    "scipy>=1.18.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.21,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.4.0",
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
