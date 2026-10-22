@@ -1,0 +1,69 @@
+{
+ "experiment": "icfd_sample",
+ "created": "2026-10-22T14:51:02+00:00",
+ "commit": "476058d",
+ "machine": "arm64 Darwin",
+ "config": {
+  "splits": 20,
+  "far": 0.05,
+  "detector": "scrfd_10g on padded crops"
+ },
+ "results": [
+  {
+   "embedder": "arcface_r50",
+   "degraded_gallery": false,
+   "rank1": 0.985,
+   "open_set_dir": 0.9475000000000001,
+   "open_set_dir_std": 0.019202864369671495
+  },
+  {
+   "embedder": "arcface_r50",
+   "degraded_gallery": true,
+   "rank1": 0.985,
+   "open_set_dir": 0.945,
+   "open_set_dir_std": 0.02291287847477918
+  },
+  {
+   "embedder": "arcface_mbf",
+   "degraded_gallery": false,
+   "rank1": 0.98,
+   "open_set_dir": 0.8940000000000001,
+   "open_set_dir_std": 0.03527038417709681
+  },
+  {
+   "embedder": "arcface_mbf",
+   "degraded_gallery": true,
+   "rank1": 0.98,
+   "open_set_dir": 0.9014999999999999,
+   "open_set_dir_std": 0.02761792895928296
+  },
+  {
+   "embedder": "sface",
+   "degraded_gallery": false,
+   "rank1": 0.955,
+   "open_set_dir": 0.8624999999999998,
+   "open_set_dir_std": 0.04504164739438378
+  },
+  {
+   "embedder": "sface",
+   "degraded_gallery": true,
+   "rank1": 0.95,
+   "open_set_dir": 0.882,
+   "open_set_dir_std": 0.02293468988235945
+  },
+  {
+   "embedder": "lbp",
+   "degraded_gallery": false,
+   "rank1": 0.08,
+   "open_set_dir": 0.013499999999999998,
+   "open_set_dir_std": 0.015898113095584646
+  },
+  {
+   "embedder": "lbp",
+   "degraded_gallery": true,
+   "rank1": 0.21,
+   "open_set_dir": 0.0465,
+   "open_set_dir_std": 0.036093628246547896
+  }
+ ]
+}
