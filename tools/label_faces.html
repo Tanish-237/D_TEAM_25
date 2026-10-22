@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuickPic labeller</title>
+<style>
+  :root {
+    --bg: #f4f6f8; --panel: #ffffff; --ink: #18212d; --muted: #5d6878; --rule: #d8dee6;
+    --known: #1f6fb2; --unknown: #8a94a3; --notface: #c2412d; --missed: #c98a00;
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); }
+  header {
+    position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--rule);
+  }
+  header h1 { font-size: 15px; margin: 0 8px 0 0; }
+  select, button, input { font: inherit; }
+  button { padding: 6px 12px; border: 1px solid var(--rule); border-radius: 4px; background: var(--panel); cursor: pointer; }
+  button.primary { background: var(--known); border-color: var(--known); color: #fff; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--known); outline-offset: 1px; }
+  #summary { color: var(--muted); font-variant-numeric: tabular-nums; }
+  #status { margin-left: auto; color: var(--muted); }
+  main { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; padding: 16px; }
+  @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+  #overview { position: sticky; top: 64px; align-self: start; }
+  #frame { position: relative; line-height: 0; background: #000; }
+  #frame img { width: 100%; height: auto; display: block; }
+  #frame svg { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair; }
+  .hint { color: var(--muted); margin: 8px 0 0; line-height: 1.4; }
+  rect.box { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; cursor: pointer; }
+  rect.box.unknown { stroke: var(--unknown); }
+  rect.box.known { stroke: var(--known); stroke-width: 3; }
+  rect.box.not_face { stroke: var(--notface); stroke-dasharray: 4 3; }
+  rect.box.active { stroke: #fff; stroke-width: 4; }
+  text.num { fill: #fff; paint-order: stroke; stroke: #000; stroke-width: 3px; font-weight: 700; pointer-events: none; }
+  circle.missed { fill: var(--missed); stroke: #fff; stroke-width: 2; vector-effect: non-scaling-stroke; cursor: pointer; }
+  #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; align-content: start; }
+  .card { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 6px; display: grid; gap: 5px; }
+  .card.known { border-color: var(--known); box-shadow: inset 0 0 0 1px var(--known); }
+  .card.not_face { opacity: .55; }
+  .card.duplicate { border-color: var(--notface); box-shadow: inset 0 0 0 2px var(--notface); }
+  .card img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 3px; background: #ddd; }
+  .row { display: flex; gap: 6px; align-items: center; }
+  .num-chip { font-weight: 700; font-variant-numeric: tabular-nums; min-width: 2.2em; }
+  .card input { width: 100%; min-width: 0; padding: 4px 6px; border: 1px solid var(--rule); border-radius: 4px; }
+  .card input.invalid { border-color: var(--notface); }
+  .name { color: var(--muted); font-size: 12px; min-height: 1.2em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card button { padding: 2px 6px; font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>QuickPic labeller</h1>
+  <label for="photo">Photo</label>
+  <select id="photo"></select>
+  <span id="summary"></span>
+  <button class="primary" id="save">Save (⌘S)</button>
+  <span id="status"></span>
+</header>
+<main>
+  <section id="overview">
+    <div id="frame"><img id="image" alt="Class photo"><svg id="marks"></svg></div>
+    <p class="hint">Type a roll number under each face you recognise; leave the rest empty for unknown. Press Enter to move to the next face. Click a box to jump to its face. Click anywhere else on the photo to mark a face the detector missed, and click a marker again to remove it.</p>
+  </section>
+  <section id="grid"></section>
+</main>
+<datalist id="students"></datalist>
+<script>
+const $ = (id) => document.getElementById(id);
+let state = { photos: [], students: [] }, current = null, labels = null, dirty = false;
+const known = new Map();
+
+async function init() {
+  state = await (await fetch("/api/state")).json();
+  state.students.forEach((s) => known.set(s.roll, s.name));
+  $("students").innerHTML = state.students.map((s) => `<option value="${s.roll}">${s.name}</option>`).join("");
+  $("photo").innerHTML = state.photos.map((p) => `<option value="${p.id}">${p.reviewed ? "✓ " : ""}${p.name}</option>`).join("");
+  $("photo").addEventListener("change", (e) => open(+e.target.value));
+  $("save").addEventListener("click", save);
+  document.addEventListener("keydown", (e) => { if ((e.metaKey || e.ctrlKey) && e.key === "s") { e.preventDefault(); save(); } });
+  window.addEventListener("beforeunload", (e) => { if (dirty) e.preventDefault(); });
+  open(0);
+}
+
+async function open(id) {
+  if (dirty && !window.confirm("Unsaved labels on this photo will be lost. Continue?")) { $("photo").value = current; return; }
+  current = id; dirty = false;
+  $("status").textContent = "Detecting faces…";
+  labels = await (await fetch(`/api/photo/${id}`)).json();
+  $("image").src = `/overview/${id}.jpg`;
+  const [w, h] = labels.size;
+  $("marks").setAttribute("viewBox", `0 0 ${w} ${h}`);
+  renderGrid(); renderMarks(); summarise();
+  $("status").textContent = labels.reviewed ? "Reviewed earlier" : "Not saved yet";
+}
+
+function renderGrid() {
+  $("grid").innerHTML = labels.faces.map((f, i) => `
+    <div class="card" id="card-${i}" data-i="${i}">
+      <img loading="lazy" src="/crop/${current}/${i}.jpg" alt="Face ${i + 1}">
+      <div class="row"><span class="num-chip">${i + 1}</span>
+        <input id="roll-${i}" list="students" placeholder="unknown" autocomplete="off" value="${isRoll(f.label) ? f.label : ""}"></div>
+      <div class="name" id="name-${i}"></div>
+      <div class="row"><button data-act="notface">${f.label === "not_face" ? "It is a face" : "Not a face"}</button></div>
+    </div>`).join("");
+  labels.faces.forEach((f, i) => {
+    const input = $(`roll-${i}`);
+    input.addEventListener("input", () => { setLabel(i, input.value.trim() || "unknown"); });
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); focusFace(i + 1); } });
+    input.addEventListener("focus", () => highlight(i));
+    $(`card-${i}`).querySelector("[data-act=notface]").addEventListener("click", () => {
+      setLabel(i, labels.faces[i].label === "not_face" ? "unknown" : "not_face");
+      input.value = ""; renderCard(i);
+    });
+    renderCard(i);
+  });
+}
+
+function isRoll(label) { return label !== "unknown" && label !== "not_face"; }
+
+function setLabel(i, label) { labels.faces[i].label = label; dirty = true; renderCard(i); renderMarks(); summarise(); }
+
+function renderCard(i) {
+  const f = labels.faces[i], card = $(`card-${i}`), input = $(`roll-${i}`);
+  card.classList.toggle("known", isRoll(f.label));
+  card.classList.toggle("not_face", f.label === "not_face");
+  input.disabled = f.label === "not_face";
+  input.classList.toggle("invalid", isRoll(f.label) && known.size > 0 && !known.has(f.label));
+  $(`name-${i}`).textContent = f.label === "not_face" ? "not a face" : isRoll(f.label) ? (known.get(f.label) || "not in students.csv") : "";
+  card.querySelector("[data-act=notface]").textContent = f.label === "not_face" ? "It is a face" : "Not a face";
+}
+
+function renderMarks() {
+  const [w] = labels.size, fs = Math.max(14, w / 110);
+  const boxes = labels.faces.map((f, i) => {
+    const [x1, y1, x2, y2] = f.box, cls = f.label === "not_face" ? "not_face" : isRoll(f.label) ? "known" : "unknown";
+    return `<rect class="box ${cls}" data-i="${i}" x="${x1}" y="${y1}" width="${x2 - x1}" height="${y2 - y1}"></rect>
+            <text class="num" x="${x1}" y="${y1 - 3}" font-size="${fs}">${i + 1}</text>`;
+  });
+  const missed = labels.missed.map(([x, y], k) => `<circle class="missed" data-k="${k}" cx="${x}" cy="${y}" r="${fs * 0.7}"></circle>`);
+  $("marks").innerHTML = boxes.join("") + missed.join("");
+  markDuplicates();
+}
+
+function markDuplicates() {
+  const counts = {};
+  labels.faces.forEach((f) => { if (isRoll(f.label)) counts[f.label] = (counts[f.label] || 0) + 1; });
+  labels.faces.forEach((f, i) => $(`card-${i}`).classList.toggle("duplicate", isRoll(f.label) && counts[f.label] > 1));
+}
+
+$("marks").addEventListener("click", (e) => {
+  const target = e.target;
+  if (target.dataset.i !== undefined) return focusFace(+target.dataset.i);
+  if (target.dataset.k !== undefined) { labels.missed.splice(+target.dataset.k, 1); }
+  else {
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform($("marks").getScreenCTM().inverse());
+    labels.missed.push([Math.round(p.x), Math.round(p.y)]);
+  }
+  dirty = true; renderMarks(); summarise();
+});
+
+function focusFace(i) {
+  if (i >= labels.faces.length) return $("save").focus();
+  $(`card-${i}`).scrollIntoView({ block: "center", behavior: "smooth" });
+  $(`roll-${i}`).focus({ preventScroll: true });
+}
+
+function highlight(i) {
+  document.querySelectorAll("rect.box.active").forEach((r) => r.classList.remove("active"));
+  document.querySelector(`rect.box[data-i="${i}"]`)?.classList.add("active");
+}
+
+function summarise() {
+  const f = labels.faces, tagged = f.filter((x) => isRoll(x.label)).length, notFace = f.filter((x) => x.label === "not_face").length;
+  $("summary").textContent = `${f.length} detected · ${tagged} tagged · ${f.length - tagged - notFace} unknown · ${notFace} not faces · ${labels.missed.length} missed`;
+}
+
+async function save() {
+  const duplicates = document.querySelectorAll(".card.duplicate").length;
+  if (duplicates && !window.confirm("The same roll number appears on more than one face. Save anyway?")) return;
+  const body = { faces: labels.faces.map((f) => f.label), missed: labels.missed };
+  const res = await fetch(`/api/photo/${current}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!res.ok) { $("status").textContent = "Save failed, see the terminal"; return; }
+  dirty = false; $("status").textContent = `Saved ${new Date().toLocaleTimeString()}`;
+  state.photos[current].reviewed = true;
+  $("photo").options[current].textContent = `✓ ${state.photos[current].name}`;
+}
+
+init();
+</script>
+</body>
+</html>

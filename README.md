@@ -43,6 +43,7 @@ make check      # data guard, lint, tests
 src/quickpic/   recognition engine: importable, typed, tested, no UI code
 experiments/    scripts that produce every number in the paper → experiments/results/*.json
 notebooks/      Colab and exploration notebooks; nothing imports from here
+tools/          local helpers, such as the face labeller that builds the answer key
 web/            Django app, a thin layer over the engine
 tests/          unit tests for the engine
 paper/          IEEE paper (LaTeX)
