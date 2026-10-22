@@ -72,18 +72,15 @@ def lfw(root: Path, embedder: Embedder, cache: Path) -> dict:
     pairs = read_lfw_pairs(root / "pairs.txt")
     names = sorted({p for pair in pairs for p in (pair[0], pair[1])})
     index = {name: i for i, name in enumerate(names)}
-    detector = load_detector("scrfd_10g")
-
-    def prepare(image):
-        faces = detector.detect(image)
-        if not faces:
-            return crop_box(image, np.array([68, 68, 182, 182]))
-        centre = np.array(image.shape[1::-1]) / 2
-        nearest = min(faces, key=lambda f: np.linalg.norm(box_centre(f) - centre))
-        return align(image, nearest)
-
-    paths = [root / "lfw" / name for name in names]
-    vectors = embed_paths(embedder, paths, prepare, cache / f"lfw_{embedder.name}.npy")
+    crops = lfw_aligned_crops(root, names, cache / "lfw_aligned_crops.npy")
+    file = cache / f"lfw_{embedder.name}.npy"
+    if file.exists():
+        vectors = np.load(file).astype(np.float32)
+    else:
+        vectors = np.vstack(
+            [embedder.embed(list(crops[i : i + BATCH])) for i in range(0, len(crops), BATCH)]
+        )
+        np.save(file, vectors.astype(np.float16))
     scores = np.array([vectors[index[a]] @ vectors[index[b]] for a, b, _, _ in pairs])
     same = np.array([s for _, _, s, _ in pairs])
     folds = np.array([f for _, _, _, f in pairs])
@@ -92,6 +89,29 @@ def lfw(root: Path, embedder: Embedder, cache: Path) -> dict:
         "tar_at_far_1e-3": tar_at_far(scores[same], scores[~same], 1e-3),
         "pairs": len(pairs),
     }
+
+
+def lfw_aligned_crops(root: Path, names: list[str], cache: Path) -> np.ndarray:
+    """Detects and aligns every LFW image once; the crops are shared by all embedders."""
+    if cache.exists():
+        return np.load(cache)
+    detector = load_detector("scrfd_10g")
+    crops = []
+    for n, name in enumerate(names):
+        image = cv2.imread(str(root / "lfw" / name))
+        faces = detector.detect(image)
+        if faces:
+            centre = np.array(image.shape[1::-1]) / 2
+            nearest = min(faces, key=lambda f: np.linalg.norm(box_centre(f) - centre))
+            crops.append(align(image, nearest))
+        else:
+            crops.append(crop_box(image, np.array([68, 68, 182, 182])))
+        if n % 2000 == 0:
+            print(f"  aligning LFW: {n}/{len(names)}", flush=True)
+    result = np.stack(crops)
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    np.save(cache, result)
+    return result
 
 
 def read_lfw_pairs(path: Path) -> list[tuple[str, str, bool, int]]:
@@ -196,6 +216,12 @@ def main() -> None:
 
     for name in args.embedders:
         embedder = load_embedder(name)
+        if hasattr(embedder, "model"):
+            print(
+                name,
+                "running on",
+                getattr(embedder.model, "session", None) and embedder.model.session.get_providers(),
+            )
         results = {"embedder": name}
         if args.lfw:
             results["lfw"] = lfw(args.lfw, embedder, args.cache)
