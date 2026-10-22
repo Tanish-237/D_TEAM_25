@@ -57,7 +57,9 @@ def load_embedder(name: str) -> Embedder:
                 MODELS_DIR / "insightface/buffalo_s/w600k_mbf.onnx", name, PROVIDERS
             )
         case "sface":
-            return SFaceEmbedder(MODELS_DIR / "opencv/face_recognition_sface_2021dec.onnx")
+            return SFaceEmbedder(
+                MODELS_DIR / "opencv/face_recognition_sface_2021dec.onnx", PROVIDERS
+            )
         case "lbp":
             return LbpEmbedder()
     raise ValueError(f"Unknown embedder {name!r}; choose from {EMBEDDERS}")

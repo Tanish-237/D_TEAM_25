@@ -48,17 +48,28 @@ class ArcFaceEmbedder:
 
 
 class SFaceEmbedder:
-    """SFace (Zhong et al., IEEE TIP 2021), a MobileFaceNet, 128-dimensional, Apache-2.0."""
+    """SFace (Zhong et al., IEEE TIP 2021), a MobileFaceNet, 128-dimensional, Apache-2.0.
 
-    def __init__(self, model_path: Path):
+    Run through onnxruntime rather than OpenCV so it can use a GPU. The model
+    file accepts one face per call; outputs match cv2.FaceRecognizerSF.
+    """
+
+    def __init__(self, model_path: Path, providers: list[str] | None = None):
         self.name = "sface"
         self.dim = 128
-        self.model = cv2.FaceRecognizerSF.create(str(model_path), "")
+        self.session = onnxruntime.InferenceSession(
+            str(model_path), providers=providers or ["CPUExecutionProvider"]
+        )
+        self.input = self.session.get_inputs()[0].name
 
     def embed(self, crops: list[np.ndarray]) -> np.ndarray:
         if not crops:
             return np.empty((0, self.dim), dtype=np.float32)
-        return normalise(np.vstack([self.model.feature(crop) for crop in crops]))
+        vectors = []
+        for crop in crops:
+            rgb = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB).transpose(2, 0, 1)[None].astype(np.float32)
+            vectors.append(self.session.run(None, {self.input: rgb})[0])
+        return normalise(np.vstack(vectors))
 
 
 class LbpEmbedder:

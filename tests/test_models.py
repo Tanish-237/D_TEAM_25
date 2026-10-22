@@ -74,3 +74,12 @@ def test_embedder_separates_same_face_from_different_people(image, name):
     np.fill_diagonal(different_people, np.nan)
 
     assert same_face.min() > np.nanmax(different_people)
+
+
+def test_sface_matches_opencv_implementation(image):
+    crops = [align(image, f) for f in load_detector("scrfd_10g").detect(image)]
+    path = str(MODELS_DIR / "opencv/face_recognition_sface_2021dec.onnx")
+    reference = np.vstack([cv2.FaceRecognizerSF.create(path, "").feature(c) for c in crops])
+    reference /= np.linalg.norm(reference, axis=1, keepdims=True)
+
+    np.testing.assert_allclose(load_embedder("sface").embed(crops), reference, atol=1e-5)
