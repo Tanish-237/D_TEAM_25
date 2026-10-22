@@ -13,6 +13,8 @@ import onnxruntime
 from insightface.model_zoo import get_model
 from skimage.feature import local_binary_pattern
 
+from quickpic.detect import device_id
+
 # The ArcFace ONNX files declare batch size 1 but run batches fine; hide that warning.
 onnxruntime.set_default_logger_severity(3)
 
@@ -32,11 +34,12 @@ def normalise(vectors: np.ndarray) -> np.ndarray:
 class ArcFaceEmbedder:
     """ArcFace-trained CNN (Deng et al., CVPR 2019), 512-dimensional."""
 
-    def __init__(self, model_path: Path, name: str):
+    def __init__(self, model_path: Path, name: str, providers: list[str] | None = None):
         self.name = name
         self.dim = 512
-        self.model = get_model(str(model_path), providers=["CPUExecutionProvider"])
-        self.model.prepare(-1)
+        providers = providers or ["CPUExecutionProvider"]
+        self.model = get_model(str(model_path), providers=providers)
+        self.model.prepare(device_id(providers))
 
     def embed(self, crops: list[np.ndarray]) -> np.ndarray:
         if not crops:

@@ -1,4 +1,4 @@
-.PHONY: setup models test lint format check guard
+.PHONY: setup models test lint format check guard bundle
 
 setup:
 	uv sync
@@ -21,3 +21,8 @@ guard:
 	./scripts/check_no_faces.sh
 
 check: guard lint test
+
+bundle:
+	mkdir -p dist
+	git archive --format=zip -o dist/quickpic-src.zip HEAD
+	@echo "Upload dist/quickpic-src.zip to Google Drive: MyDrive/QuickPic/"

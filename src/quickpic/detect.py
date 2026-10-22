@@ -16,6 +16,11 @@ from quickpic.face import Face
 from quickpic.imageio import resize_to_max_side
 
 
+def device_id(providers: list[str]) -> int:
+    """InsightFace convention: 0 means the first GPU, -1 forces the CPU."""
+    return 0 if "CUDAExecutionProvider" in providers else -1
+
+
 class Detector(Protocol):
     name: str
 
@@ -25,11 +30,21 @@ class Detector(Protocol):
 class ScrfdDetector:
     """SCRFD (Guo et al., ICLR 2022), a CNN that predicts boxes and five landmarks."""
 
-    def __init__(self, model_path: Path, name: str, max_side: int = 640, threshold: float = 0.5):
+    def __init__(
+        self,
+        model_path: Path,
+        name: str,
+        max_side: int = 640,
+        threshold: float = 0.5,
+        providers: list[str] | None = None,
+    ):
         self.name = name
         self.max_side = max_side
-        self.model = get_model(str(model_path), providers=["CPUExecutionProvider"])
-        self.model.prepare(-1, input_size=(max_side, max_side), det_thresh=threshold)
+        providers = providers or ["CPUExecutionProvider"]
+        self.model = get_model(str(model_path), providers=providers)
+        self.model.prepare(
+            device_id(providers), input_size=(max_side, max_side), det_thresh=threshold
+        )
 
     def detect(self, image: np.ndarray) -> list[Face]:
         size = (self.max_side, self.max_side)

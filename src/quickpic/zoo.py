@@ -9,6 +9,13 @@ from quickpic.tiling import TiledDetector
 
 MODELS_DIR = Path(os.environ.get("QUICKPIC_MODELS", Path(__file__).resolve().parents[2] / "models"))
 
+# Set QUICKPIC_DEVICE=cuda on a GPU machine such as Colab; the default is CPU only.
+PROVIDERS = (
+    ["CUDAExecutionProvider", "CPUExecutionProvider"]
+    if os.environ.get("QUICKPIC_DEVICE") == "cuda"
+    else ["CPUExecutionProvider"]
+)
+
 DETECTORS = ("scrfd_10g", "scrfd_500m", "yunet", "haar")
 EMBEDDERS = ("arcface_r50", "arcface_mbf", "sface", "lbp")
 
@@ -17,9 +24,19 @@ def load_detector(name: str, max_side: int = 640, tiles: bool = False) -> Detect
     """Builds a detector by name. With tiles=True it is wrapped in TiledDetector (component T)."""
     match name:
         case "scrfd_10g":
-            base = ScrfdDetector(MODELS_DIR / "insightface/buffalo_l/det_10g.onnx", name, max_side)
+            base = ScrfdDetector(
+                MODELS_DIR / "insightface/buffalo_l/det_10g.onnx",
+                name,
+                max_side,
+                providers=PROVIDERS,
+            )
         case "scrfd_500m":
-            base = ScrfdDetector(MODELS_DIR / "insightface/buffalo_s/det_500m.onnx", name, max_side)
+            base = ScrfdDetector(
+                MODELS_DIR / "insightface/buffalo_s/det_500m.onnx",
+                name,
+                max_side,
+                providers=PROVIDERS,
+            )
         case "yunet":
             base = YuNetDetector(MODELS_DIR / "opencv/face_detection_yunet_2023mar.onnx", max_side)
         case "haar":
@@ -32,9 +49,13 @@ def load_detector(name: str, max_side: int = 640, tiles: bool = False) -> Detect
 def load_embedder(name: str) -> Embedder:
     match name:
         case "arcface_r50":
-            return ArcFaceEmbedder(MODELS_DIR / "insightface/buffalo_l/w600k_r50.onnx", name)
+            return ArcFaceEmbedder(
+                MODELS_DIR / "insightface/buffalo_l/w600k_r50.onnx", name, PROVIDERS
+            )
         case "arcface_mbf":
-            return ArcFaceEmbedder(MODELS_DIR / "insightface/buffalo_s/w600k_mbf.onnx", name)
+            return ArcFaceEmbedder(
+                MODELS_DIR / "insightface/buffalo_s/w600k_mbf.onnx", name, PROVIDERS
+            )
         case "sface":
             return SFaceEmbedder(MODELS_DIR / "opencv/face_recognition_sface_2021dec.onnx")
         case "lbp":

@@ -5,17 +5,17 @@ description = "Open-set face recognition for classroom attendance from a single 
 authors = [
     { name = "Tanish Mittal", email = "tanish.20233288@mnnit.ac.in" }
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
-    "insightface>=2.1",
-    "numpy>=2.5.4",
-    "onnxruntime>=1.31.0",
+    "insightface>=0.7.3",
+    "numpy>=1.26",
+    "onnxruntime>=1.17",
     "opencv-python>=4.10,<5",
-    "pillow>=13.0.0",
-    "pillow-heif>=1.8.1",
-    "scikit-image>=0.26.0",
-    "scikit-learn>=1.9.1",
-    "scipy>=1.18.1",
+    "pillow>=10",
+    "pillow-heif>=0.16",
+    "scikit-image>=0.22",
+    "scikit-learn>=1.4",
+    "scipy>=1.11",
 ]
 
 [build-system]
@@ -31,7 +31,8 @@ dev = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py312"
+target-version = "py311"
+extend-exclude = ["notebooks"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
