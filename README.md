@@ -14,7 +14,7 @@ class photo ─► detect ─► align ─► embed ─► match ─► assign �
 
 1. **Detect.** Find each face and its five landmarks (SCRFD, YuNet, or a Haar cascade as the classical baseline).
 2. **Align.** Warp each face onto a fixed 112×112 template using its landmarks.
-3. **Embed.** Map each face to a 512-number vector with a frozen network (ArcFace, SFace, or LBP histograms as the classical baseline).
+3. **Embed.** Map each face to a fixed-length vector, its embedding, with a frozen network (ArcFace, SFace, or LBP histograms as the classical baseline). Photos of the same person give nearby vectors.
 4. **Match.** Compare each face with every enrolled student's stored vectors.
 5. **Assign.** Decide all faces in the photo jointly, so each student is matched at most once and weak matches become unknown.
 
