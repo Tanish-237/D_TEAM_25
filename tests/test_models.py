@@ -5,6 +5,7 @@ Skipped when the weights are absent, as in CI. Run `make models` to enable.
 
 from pathlib import Path
 
+import cv2
 import insightface
 import numpy as np
 import pytest
@@ -35,6 +36,19 @@ def test_cnn_detectors_find_all_six_faces(image, name):
 
 def test_haar_finds_most_faces(image):
     assert len(load_detector("haar").detect(image)) >= 4
+
+
+def test_tiling_recovers_small_faces_in_a_large_photo(image):
+    # Shrink the sample so its faces are about 25 px tall, and place it in a 4000x3000 photo.
+    small = cv2.resize(image, None, fx=0.2, fy=0.2, interpolation=cv2.INTER_AREA)
+    big = np.zeros((3000, 4000, 3), np.uint8)
+    big[1500 : 1500 + small.shape[0], 2500 : 2500 + small.shape[1]] = small
+
+    whole = load_detector("scrfd_10g").detect(big)
+    tiled = load_detector("scrfd_10g", tiles=True).detect(big)
+
+    assert len(whole) < 6
+    assert len(tiled) == 6
 
 
 def left_to_right(faces):
