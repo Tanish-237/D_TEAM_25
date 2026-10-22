@@ -24,5 +24,7 @@ check: guard lint test
 
 bundle:
 	mkdir -p dist
+	git rev-parse --short HEAD > dist/COMMIT
 	git archive --format=zip -o dist/quickpic-src.zip HEAD
+	cd dist && zip -q quickpic-src.zip COMMIT && rm COMMIT
 	@echo "Upload dist/quickpic-src.zip to Google Drive: MyDrive/QuickPic/"

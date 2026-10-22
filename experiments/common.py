@@ -8,6 +8,10 @@ RESULTS_DIR = Path(__file__).resolve().parent / "results"
 
 
 def git_commit() -> str:
+    """Short commit hash; inside a `make bundle` zip it is read from the COMMIT file."""
+    stamp = Path(__file__).resolve().parents[1] / "COMMIT"
+    if stamp.exists():
+        return stamp.read_text().strip()
     try:
         sha = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], text=True).strip()
         dirty = subprocess.check_output(["git", "status", "--porcelain", "--", "src"], text=True)
