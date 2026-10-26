@@ -1,0 +1,49 @@
+{
+ "experiment": "public_benchmarks_arcface_mbf",
+ "created": "2026-10-26T18:00:02+00:00",
+ "commit": "33942a6",
+ "machine": "x86_64 Linux",
+ "config": {
+  "tinyface_preprocessing": "pad to square, resize 112",
+  "lfw_detector": "scrfd_10g",
+  "open_set_seeds": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "fars": [
+   0.01,
+   0.001
+  ]
+ },
+ "results": {
+  "embedder": "arcface_mbf",
+  "lfw": {
+   "accuracy": 0.9948333333333332,
+   "tar_at_far_1e-3": 0.99,
+   "pairs": 6000
+  },
+  "tinyface": {
+   "closed_set": {
+    "rank1": 0.36936695278969955,
+    "rank5": 0.453862660944206,
+    "rank20": 0.5270922746781116,
+    "distractor_images": 153428
+   },
+   "open_set": {
+    "dir_at_far_0.01": {
+     "mean": 0.21044923728488435,
+     "std": 0.005334878342223598
+    },
+    "dir_at_far_0.001": {
+     "mean": 0.14880457273554099,
+     "std": 0.0059302373977956225
+    },
+    "enrolled_identities": 1284,
+    "unknown_probes": 155254
+   }
+  }
+ }
+}
