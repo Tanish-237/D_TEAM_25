@@ -169,9 +169,10 @@ def main() -> None:
     parser.add_argument("--tinyface", type=Path)
     parser.add_argument("--cache", type=Path, required=True)
     parser.add_argument("--embedders", nargs="+", default=["arcface_mbf", "arcface_r50", "sface"])
+    parser.add_argument("--align-detector", default="scrfd_10g", help="scrfd_500m is faster on CPU")
     args = parser.parse_args()
 
-    detector = load_detector("scrfd_10g")
+    detector = load_detector(args.align_detector)
     people = lfw_people(args.lfw)
     for name in args.embedders:
         embedder = load_embedder(name)
