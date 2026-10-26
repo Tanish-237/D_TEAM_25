@@ -1,0 +1,96 @@
+{
+ "experiment": "calibration_arcface_r50",
+ "created": "2026-10-26T19:09:20+00:00",
+ "commit": "1aaf3a2",
+ "machine": "arm64 Darwin",
+ "config": {
+  "heights": [
+   12,
+   16,
+   20,
+   24,
+   32,
+   48,
+   64,
+   112
+  ],
+  "far": 0.01,
+  "impostors_per_probe": 20
+ },
+ "results": {
+  "embedder": "arcface_r50",
+  "weights": {
+   "bias": -10.03920791934744,
+   "score": 4.3991506460018535,
+   "log_h": -2.996494750802408,
+   "log_sharp": -0.1132041234998129,
+   "score_x_log_h": 1.5871878126945376
+  },
+  "lfw_test_by_height": {
+   "12": {
+    "pairs": 2688,
+    "tar_raw": 0.859375,
+    "tar_calibrated": 0.9296875,
+    "far_raw": 0.006640625,
+    "far_calibrated": 0.042578125
+   },
+   "16": {
+    "pairs": 2310,
+    "tar_raw": 0.9818181818181818,
+    "tar_calibrated": 0.990909090909091,
+    "far_raw": 0.007272727272727273,
+    "far_calibrated": 0.01818181818181818
+   },
+   "20": {
+    "pairs": 2373,
+    "tar_raw": 1.0,
+    "tar_calibrated": 1.0,
+    "far_raw": 0.010176991150442478,
+    "far_calibrated": 0.010176991150442478
+   },
+   "24": {
+    "pairs": 2751,
+    "tar_raw": 1.0,
+    "tar_calibrated": 1.0,
+    "far_raw": 0.008396946564885497,
+    "far_calibrated": 0.004580152671755725
+   },
+   "32": {
+    "pairs": 3150,
+    "tar_raw": 1.0,
+    "tar_calibrated": 1.0,
+    "far_raw": 0.014,
+    "far_calibrated": 0.003
+   },
+   "48": {
+    "pairs": 2772,
+    "tar_raw": 1.0,
+    "tar_calibrated": 1.0,
+    "far_raw": 0.010227272727272727,
+    "far_calibrated": 0.0003787878787878788
+   },
+   "64": {
+    "pairs": 2415,
+    "tar_raw": 1.0,
+    "tar_calibrated": 1.0,
+    "far_raw": 0.010434782608695653,
+    "far_calibrated": 0.0004347826086956522
+   },
+   "112": {
+    "pairs": 2058,
+    "tar_raw": 1.0,
+    "tar_calibrated": 0.9897959183673469,
+    "far_raw": 0.012244897959183673,
+    "far_calibrated": 0.0
+   },
+   "all": {
+    "tar_raw": 0.9795291709314228,
+    "tar_calibrated": 0.9887410440122825
+   }
+  },
+  "pairs": {
+   "train": 46494,
+   "test": 20517
+  }
+ }
+}
