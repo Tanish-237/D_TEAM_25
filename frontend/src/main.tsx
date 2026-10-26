@@ -10,6 +10,7 @@ import { ApiError, ensureCsrf } from "./lib/api";
 import { AuthProvider } from "./lib/auth";
 import { Login, Signup } from "./pages/Auth";
 import Landing from "./pages/Landing";
+import Profile from "./pages/Profile";
 import StudentDashboard from "./pages/student/Dashboard";
 import RegisterFace from "./pages/student/RegisterFace";
 import Course from "./pages/teacher/Course";
@@ -53,11 +54,13 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/student" element={<AppShell role="student" />}>
               <Route index element={<StudentDashboard />} />
               <Route path="face" element={<RegisterFace />} />
+              <Route path="profile" element={<Profile />} />
             </Route>
             <Route path="/teacher" element={<AppShell role="teacher" />}>
               <Route index element={<TeacherDashboard />} />
               <Route path="courses/:id" element={<Course />} />
               <Route path="sessions/:id" element={<Session />} />
+              <Route path="profile" element={<Profile />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -7,7 +7,7 @@ from datetime import date
 
 import cv2
 from django.conf import settings
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Q
@@ -21,12 +21,21 @@ from ninja.security import django_auth
 from ninja.utils import check_csrf
 
 from attendance import engine
-from attendance.models import Attendance, ClassSession, Course, DetectedFace, FaceData, User
+from attendance.models import (
+    Attendance,
+    ClassSession,
+    Course,
+    DetectedFace,
+    FaceData,
+    User,
+    course_code,
+)
 from quickpic.imageio import load_image
 
 api = NinjaAPI(title="QuickPic", auth=django_auth, docs_url="/docs")
 auth_router = Router(auth=None)
 student_router = Router()
+account_router = Router()
 teacher_router = Router()
 
 
@@ -161,6 +170,97 @@ def signup(request, data: SignupIn):
     return {"user": as_user(user)}
 
 
+# --------------------------------------------------------------------------- account
+
+
+class ProfileIn(Schema):
+    first_name: str
+    last_name: str = ""
+    roll_no: str = ""
+
+
+class PasswordIn(Schema):
+    current: str
+    new: str
+
+
+class DeleteAccountIn(Schema):
+    password: str
+
+
+@account_router.get("/profile")
+def profile(request):
+    """The profile card: who the user is and a few totals for their role."""
+    user = request.user
+    if user.is_teacher:
+        courses = user.courses_taught.all()
+        stats = {
+            "courses": courses.count(),
+            "students": User.objects.filter(courses__teacher=user).distinct().count(),
+            "lectures": ClassSession.objects.filter(
+                course__teacher=user, status=ClassSession.Status.CONFIRMED
+            ).count(),
+        }
+    else:
+        records = Attendance.objects.filter(student=user, session__course__students=user)
+        attended = records.filter(present=True).count()
+        stats = {
+            "courses": user.courses.count(),
+            "attended": attended,
+            "lectures": records.count(),
+            "percent": percent(attended, records.count()),
+        }
+    return {
+        "user": as_user(user),
+        "joined": user.date_joined.isoformat(),
+        "face": None if user.is_teacher else face_status(user),
+        "stats": stats,
+    }
+
+
+@account_router.patch("/profile")
+def update_profile(request, data: ProfileIn):
+    user = request.user
+    if not data.first_name.strip():
+        raise HttpError(400, "Your first name cannot be empty.")
+    if not user.is_teacher and not data.roll_no.strip():
+        raise HttpError(400, "Students need a roll number.")
+    user.first_name = data.first_name.strip()
+    user.last_name = data.last_name.strip()
+    if not user.is_teacher:
+        user.roll_no = data.roll_no.strip()
+    user.save(update_fields=["first_name", "last_name", "roll_no"])
+    return {"user": as_user(user)}
+
+
+@account_router.post("/password")
+def change_password(request, data: PasswordIn):
+    user = request.user
+    if not user.check_password(data.current):
+        raise HttpError(400, "Your current password is not correct.")
+    try:
+        validate_password(data.new, user)
+    except ValidationError as error:
+        raise HttpError(400, " ".join(error.messages)) from error
+    user.set_password(data.new)
+    user.save(update_fields=["password"])
+    update_session_auth_hash(request, user)
+    return {"ok": True}
+
+
+@account_router.post("/delete")
+def delete_account(request, data: DeleteAccountIn):
+    """Deletes the account with its face data, attendance and (for teachers) courses."""
+    user = request.user
+    if not user.check_password(data.password):
+        raise HttpError(400, "Your password is not correct.")
+    for session in ClassSession.objects.filter(course__teacher=user).exclude(photo=""):
+        session.photo.delete(save=False)
+    logout(request)
+    user.delete()
+    return {"ok": True}
+
+
 # --------------------------------------------------------------------------- student
 
 
@@ -221,6 +321,14 @@ def join_course(request, data: JoinIn):
     return as_course(course)
 
 
+@student_router.post("/courses/{course_id}/leave")
+def leave_course(request, course_id: int):
+    """Leaves the roster; attendance already recorded in the course is kept for the teacher."""
+    course = get_object_or_404(request.user.courses, pk=course_id)
+    course.students.remove(request.user)
+    return {"ok": True}
+
+
 @student_router.get("/face/steps")
 def face_steps(request):
     return [
@@ -277,6 +385,11 @@ class CourseIn(Schema):
     subject: str
     year: int
     semester: int
+
+
+class SessionIn(Schema):
+    date: date
+    topic: str = ""
 
 
 class ConfirmIn(Schema):
@@ -336,9 +449,36 @@ def create_course(request, data: CourseIn):
     return course_summary(course)
 
 
+@teacher_router.patch("/courses/{course_id}")
+def edit_course(request, course_id: int, data: CourseIn):
+    course = own_course(request, course_id)
+    if not data.subject.strip():
+        raise HttpError(400, "Give the course a subject.")
+    if not (1 <= data.year <= 5 and 1 <= data.semester <= 10):
+        raise HttpError(400, "Year must be 1–5 and semester 1–10.")
+    course.subject, course.year, course.semester = data.subject.strip(), data.year, data.semester
+    course.save()
+    return course_summary(course)
+
+
+@teacher_router.post("/courses/{course_id}/code")
+def new_code(request, course_id: int):
+    """Replaces the join code, e.g. after it was shared too widely. Enrolled students stay."""
+    course = own_course(request, course_id)
+    code = course_code()
+    while Course.objects.filter(code=code).exists():
+        code = course_code()
+    course.code = code
+    course.save(update_fields=["code"])
+    return {"code": code}
+
+
 @teacher_router.delete("/courses/{course_id}")
 def delete_course(request, course_id: int):
-    own_course(request, course_id).delete()
+    course = own_course(request, course_id)
+    for session in course.sessions.exclude(photo=""):
+        session.photo.delete(save=False)
+    course.delete()
     return {"ok": True}
 
 
@@ -512,6 +652,14 @@ def mark(request, session_id: int, data: MarkIn):
     return {"ok": True}
 
 
+@teacher_router.patch("/sessions/{session_id}")
+def edit_session(request, session_id: int, data: SessionIn):
+    session = own_session(request, session_id)
+    session.date, session.topic = data.date, data.topic.strip()
+    session.save(update_fields=["date", "topic"])
+    return {"ok": True}
+
+
 @teacher_router.delete("/sessions/{session_id}")
 def delete_session(request, session_id: int):
     session = own_session(request, session_id)
@@ -522,5 +670,6 @@ def delete_session(request, session_id: int):
 
 
 api.add_router("/auth", auth_router)
+api.add_router("/account", account_router)
 api.add_router("/student", student_router)
 api.add_router("/teacher", teacher_router)

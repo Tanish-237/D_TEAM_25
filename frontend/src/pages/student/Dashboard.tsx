@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookOpen, Check, Plus, ScanFace, ShieldCheck, Trash2, X } from "lucide-react";
+import { BookOpen, Check, LogOut, Plus, ScanFace, ShieldCheck, Trash2, X } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
@@ -133,11 +133,44 @@ function FaceCard({ face }: { face: StudentOverview["face"] }) {
   );
 }
 
+function LeaveCourse({ course, open, onClose }: { course: StudentCourse; open: boolean; onClose: () => void }) {
+  const client = useQueryClient();
+  const leave = useMutation({
+    mutationFn: () => api(`/student/courses/${course.id}/leave`, { method: "POST" }),
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: ["student"] });
+      toast.success(`You left ${course.subject}`);
+      onClose();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title={`Leave ${course.subject}?`}
+      description="You will no longer be marked in new lectures. Attendance already recorded stays with your teacher. You can rejoin later with the course code."
+    >
+      <div className="flex justify-end gap-2">
+        <Button variant="secondary" onClick={onClose}>Cancel</Button>
+        <Button variant="danger" loading={leave.isPending} onClick={() => leave.mutate()}>Leave course</Button>
+      </div>
+    </Dialog>
+  );
+}
+
 function CourseCard({ course }: { course: StudentCourse }) {
   const [expanded, setExpanded] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const strip = [...course.records].reverse();
+  const leaveButton = (
+    <button onClick={() => setLeaving(true)} className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-danger">
+      <LogOut className="size-3.5" /> Leave course
+    </button>
+  );
   return (
-    <Card className="grid gap-5 p-6">
+    <Card className="grid content-start gap-5 p-6">
+      <LeaveCourse course={course} open={leaving} onClose={() => setLeaving(false)} />
       <div className="flex items-start gap-4">
         <ProgressRing value={course.percent} />
         <div className="grid min-w-0 flex-1 gap-1">
@@ -149,7 +182,10 @@ function CourseCard({ course }: { course: StudentCourse }) {
         <span className="num rounded-md bg-sunken px-2 py-1 text-xs text-muted">{course.code}</span>
       </div>
       {course.total === 0 ? (
-        <p className="text-sm text-muted">No lectures recorded yet.</p>
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted">No lectures recorded yet.</p>
+          {leaveButton}
+        </div>
       ) : (
         <>
           <div className="grid gap-2">
@@ -170,9 +206,12 @@ function CourseCard({ course }: { course: StudentCourse }) {
               ))}
             </div>
           </div>
-          <button onClick={() => setExpanded(!expanded)} className="justify-self-start text-sm font-medium text-muted hover:text-ink">
-            {expanded ? "Hide history" : "Show history"}
-          </button>
+          <div className="flex items-center justify-between">
+            <button onClick={() => setExpanded(!expanded)} className="text-sm font-medium text-muted hover:text-ink">
+              {expanded ? "Hide history" : "Show history"}
+            </button>
+            {leaveButton}
+          </div>
           {expanded && (
             <ul className="divide-y divide-line rounded-xl border border-line">
               {course.records.map((r, i) => (

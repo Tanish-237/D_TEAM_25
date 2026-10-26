@@ -8,6 +8,8 @@ import {
   Download,
   ImageUp,
   Loader2,
+  Pencil,
+  RefreshCw,
   Trash2,
   UserMinus,
   Users,
@@ -17,7 +19,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { PageHeader } from "../../components/Layout";
 import { Badge, Button, Card, cx, Dialog, Empty, Field, PageLoader, Stat } from "../../components/ui";
-import { api, formatDate, type CourseDetail, type StudentRow } from "../../lib/api";
+import { api, formatDate, type CourseDetail, type SessionRow, type StudentRow } from "../../lib/api";
 
 // ------------------------------------------------------------------ take attendance
 
@@ -200,6 +202,16 @@ function Bar({ value, tone }: { value: number | null; tone?: "auto" | "ink" }) {
 
 function Lectures({ course, onNew }: { course: CourseDetail; onNew: () => void }) {
   const navigate = useNavigate();
+  const client = useQueryClient();
+  const [removing, setRemoving] = useState<SessionRow | null>(null);
+  const remove = useMutation({
+    mutationFn: (id: number) => api(`/teacher/sessions/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: ["teacher"] });
+      toast.success("Lecture and its attendance deleted");
+      setRemoving(null);
+    },
+  });
   if (course.session_list.length === 0)
     return (
       <Empty icon={<Camera className="size-5" />} title="No lectures yet" action={<Button onClick={onNew}>Take attendance</Button>}>
@@ -240,8 +252,20 @@ function Lectures({ course, onNew }: { course: CourseDetail; onNew: () => void }
                   )}
                 </td>
                 <td className="px-5 py-3.5 text-right">
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
-                    {s.status === "draft" ? "Review" : "Open"} <ChevronRight className="size-3.5" />
+                  <span className="inline-flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRemoving(s);
+                      }}
+                      className="rounded-md p-1.5 text-faint hover:bg-danger-soft hover:text-danger"
+                      title="Delete this lecture"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
+                      {s.status === "draft" ? "Review" : "Open"} <ChevronRight className="size-3.5" />
+                    </span>
                   </span>
                 </td>
               </tr>
@@ -249,6 +273,19 @@ function Lectures({ course, onNew }: { course: CourseDetail; onNew: () => void }
           </tbody>
         </table>
       </div>
+      <Dialog
+        open={removing !== null}
+        onClose={() => setRemoving(null)}
+        title="Delete this lecture?"
+        description={removing ? `${formatDate(removing.date, "long")}${removing.topic ? ` · ${removing.topic}` : ""}. Its attendance marks are removed from every student's record.` : ""}
+      >
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={() => setRemoving(null)}>Cancel</Button>
+          <Button variant="danger" loading={remove.isPending} onClick={() => removing && remove.mutate(removing.id)}>
+            Delete lecture
+          </Button>
+        </div>
+      </Dialog>
     </Card>
   );
 }
@@ -387,6 +424,44 @@ function Insights({ course }: { course: CourseDetail }) {
   );
 }
 
+// ------------------------------------------------------------------ edit course
+
+function EditCourse({ course, open, onClose }: { course: CourseDetail; open: boolean; onClose: () => void }) {
+  const client = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
+  const save = useMutation({
+    mutationFn: (body: Record<string, unknown>) =>
+      api(`/teacher/courses/${course.id}`, { method: "PATCH", json: body }),
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: ["teacher"] });
+      toast.success("Course updated");
+      onClose();
+    },
+    onError: (e) => setError(e.message),
+  });
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const f = new FormData(event.currentTarget);
+    setError(null);
+    save.mutate({ subject: f.get("subject"), year: Number(f.get("year")), semester: Number(f.get("semester")) });
+  };
+  return (
+    <Dialog open={open} onClose={onClose} title="Edit course">
+      <form onSubmit={submit} className="grid gap-4">
+        <Field label="Subject" name="subject" defaultValue={course.subject} required />
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Year" name="year" type="number" min={1} max={5} defaultValue={course.year} required />
+          <Field label="Semester" name="semester" type="number" min={1} max={10} defaultValue={course.semester} required />
+        </div>
+        {error && <p className="text-sm text-danger">{error}</p>}
+        <Button type="submit" loading={save.isPending}>
+          Save changes
+        </Button>
+      </form>
+    </Dialog>
+  );
+}
+
 // ------------------------------------------------------------------ page
 
 const TABS = ["Lectures", "Students", "Insights"] as const;
@@ -398,6 +473,8 @@ export default function Course() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("Lectures");
   const [taking, setTaking] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [newCode, setNewCode] = useState(false);
   const { data: course, isLoading } = useQuery({
     queryKey: ["teacher", "course", id],
     queryFn: () => api<CourseDetail>(`/teacher/courses/${id}`),
@@ -408,6 +485,14 @@ export default function Course() {
       client.invalidateQueries({ queryKey: ["teacher"] });
       toast.success("Course deleted");
       navigate("/teacher");
+    },
+  });
+  const regenerate = useMutation({
+    mutationFn: () => api<{ code: string }>(`/teacher/courses/${id}/code`, { method: "POST" }),
+    onSuccess: ({ code }) => {
+      client.invalidateQueries({ queryKey: ["teacher"] });
+      toast.success(`New join code ${code}. The old code no longer works.`);
+      setNewCode(false);
     },
   });
   if (isLoading || !course) return <PageLoader />;
@@ -431,6 +516,9 @@ export default function Course() {
         title={course.subject}
         actions={
           <>
+            <Button variant="secondary" icon={<Pencil className="size-4" />} onClick={() => setEditing(true)}>
+              Edit
+            </Button>
             <a href={`/api/teacher/courses/${course.id}/export`}>
               <Button variant="secondary" icon={<Download className="size-4" />}>
                 Export CSV
@@ -442,10 +530,15 @@ export default function Course() {
           </>
         }
       >
-        <button onClick={copy} className="group inline-flex items-center gap-2">
-          Join code <span className="num rounded-md bg-sunken px-2 py-0.5 font-medium text-ink">{course.code}</span>
-          <Copy className="size-3.5 opacity-50 group-hover:opacity-100" />
-        </button>
+        <span className="inline-flex flex-wrap items-center gap-3">
+          <button onClick={copy} className="group inline-flex items-center gap-2" title="Copy join code">
+            Join code <span className="num rounded-md bg-sunken px-2 py-0.5 font-medium text-ink">{course.code}</span>
+            <Copy className="size-3.5 opacity-50 group-hover:opacity-100" />
+          </button>
+          <button onClick={() => setNewCode(true)} className="inline-flex items-center gap-1 text-xs hover:text-ink">
+            <RefreshCw className="size-3" /> New code
+          </button>
+        </span>
       </PageHeader>
 
       <Card className="mb-8 grid grid-cols-2 gap-6 p-6 sm:grid-cols-4 animate-rise [animation-delay:60ms]">
@@ -495,6 +588,18 @@ export default function Course() {
           <Button variant="danger" loading={remove.isPending} onClick={() => remove.mutate()}>Delete course</Button>
         </div>
       </Dialog>
+      <Dialog
+        open={newCode}
+        onClose={() => setNewCode(false)}
+        title="Generate a new join code?"
+        description="The current code stops working. Students already in the course stay enrolled."
+      >
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={() => setNewCode(false)}>Cancel</Button>
+          <Button loading={regenerate.isPending} onClick={() => regenerate.mutate()}>New code</Button>
+        </div>
+      </Dialog>
+      <EditCourse key={`${course.subject}-${course.year}-${course.semester}`} course={course} open={editing} onClose={() => setEditing(false)} />
       <TakeAttendance courseId={course.id} open={taking} onClose={() => setTaking(false)} />
     </>
   );

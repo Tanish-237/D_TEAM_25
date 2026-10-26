@@ -5,6 +5,7 @@ import {
   CircleHelp,
   Eye,
   EyeOff,
+  Pencil,
   ScanFace,
   Search,
   ShieldCheck,
@@ -14,10 +15,10 @@ import {
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
-import { Avatar, Badge, Button, Card, cx, Dialog, Input, PageLoader } from "../../components/ui";
+import { Avatar, Badge, Button, Card, cx, Dialog, Field, Input, PageLoader } from "../../components/ui";
 import { api, formatDate, type Face, type RosterEntry, type SessionDetail } from "../../lib/api";
 
 type Assignments = Record<number, number | null>;
@@ -207,12 +208,14 @@ function Register({
   present,
   faceOf,
   onToggle,
+  onSetAll,
 }: {
   session: SessionDetail;
   roster: RosterEntry[];
   present: Set<number>;
   faceOf: Map<number, number>;
   onToggle: (id: number) => void;
+  onSetAll: (ids: number[]) => void;
 }) {
   const [query, setQuery] = useState("");
   const shown = roster.filter((s) => `${s.name} ${s.roll_no}`.toLowerCase().includes(query.toLowerCase()));
@@ -221,6 +224,18 @@ function Register({
       <div className="relative">
         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-faint" />
         <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name or roll no" className="pl-9" />
+      </div>
+      <div className="flex items-center gap-1 text-xs">
+        <span className="mr-auto text-muted">Mark</span>
+        <button onClick={() => onSetAll(roster.map((s) => s.id))} className="rounded-md px-2 py-1 font-medium text-muted hover:bg-sunken hover:text-ink">
+          All
+        </button>
+        <button onClick={() => onSetAll([...faceOf.keys()])} className="rounded-md px-2 py-1 font-medium text-muted hover:bg-sunken hover:text-ink">
+          Only seen in photo
+        </button>
+        <button onClick={() => onSetAll([])} className="rounded-md px-2 py-1 font-medium text-muted hover:bg-sunken hover:text-ink">
+          None
+        </button>
       </div>
       <ul className="-mx-2 grid max-h-[52vh] gap-0.5 overflow-y-auto">
         {shown.map((s) => {
@@ -326,9 +341,10 @@ function Review({ session }: { session: SessionDetail }) {
   const discard = useMutation({
     mutationFn: () => api(`/teacher/sessions/${session.id}`, { method: "DELETE" }),
     onSuccess: () => {
+      navigate(`/teacher/courses/${session.course.id}`);
+      client.removeQueries({ queryKey: ["teacher", "session", String(session.id)] });
       client.invalidateQueries({ queryKey: ["teacher"] });
       toast("Draft discarded");
-      navigate(`/teacher/courses/${session.course.id}`);
     },
   });
 
@@ -376,7 +392,14 @@ function Review({ session }: { session: SessionDetail }) {
             </button>
           </div>
           {panel === "register" ? (
-            <Register session={session} roster={session.roster} present={present} faceOf={faceOf} onToggle={toggle} />
+            <Register
+              session={session}
+              roster={session.roster}
+              present={present}
+              faceOf={faceOf}
+              onToggle={toggle}
+              onSetAll={(ids) => setPresent(new Set(ids))}
+            />
           ) : selectedFace ? (
             <FacePanel session={session} face={selectedFace} assign={assign} roster={session.roster} onAssign={onAssign} />
           ) : (
@@ -532,13 +555,58 @@ function Record({ session }: { session: SessionDetail }) {
 
 // ------------------------------------------------------------------ page
 
+function EditDetails({ session, open, onClose }: { session: SessionDetail; open: boolean; onClose: () => void }) {
+  const client = useQueryClient();
+  const save = useMutation({
+    mutationFn: (body: { date: string; topic: string }) =>
+      api(`/teacher/sessions/${session.id}`, { method: "PATCH", json: body }),
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: ["teacher"] });
+      toast.success("Lecture updated");
+      onClose();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const f = new FormData(event.currentTarget);
+    save.mutate({ date: String(f.get("date")), topic: String(f.get("topic")) });
+  };
+  return (
+    <Dialog open={open} onClose={onClose} title="Edit lecture details">
+      <form onSubmit={submit} className="grid gap-4">
+        <Field label="Date" name="date" type="date" defaultValue={session.date} required />
+        <Field label="Topic" name="topic" defaultValue={session.topic} placeholder="e.g. Hough transform" />
+        <Button type="submit" loading={save.isPending}>
+          Save
+        </Button>
+      </form>
+    </Dialog>
+  );
+}
+
 export default function Session() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const client = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const { data: session, isLoading } = useQuery({
     queryKey: ["teacher", "session", id],
     queryFn: () => api<SessionDetail>(`/teacher/sessions/${id}`),
   });
+  const remove = useMutation({
+    mutationFn: () => api(`/teacher/sessions/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      navigate(`/teacher/courses/${session!.course.id}`);
+      // Drop the deleted lecture instead of refetching it, then refresh the lists.
+      client.removeQueries({ queryKey: ["teacher", "session", id] });
+      client.invalidateQueries({ queryKey: ["teacher"] });
+      toast.success("Lecture and its attendance deleted");
+    },
+  });
   if (isLoading || !session) return <PageLoader />;
+  const confirmed = session.status === "confirmed";
   return (
     <>
       <Link to={`/teacher/courses/${session.course.id}`} className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink">
@@ -546,14 +614,36 @@ export default function Session() {
       </Link>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3 animate-rise">
         <div className="grid gap-1.5">
-          <span className="label">{session.status === "draft" ? "Review draft" : "Attendance record"}</span>
+          <span className="label">{confirmed ? "Attendance record" : "Review draft"}</span>
           <h1 className="text-2xl font-semibold sm:text-[28px]">
             {formatDate(session.date, "long")}
             {session.topic && <span className="text-muted"> · {session.topic}</span>}
           </h1>
         </div>
+        <div className="flex gap-2">
+          <Button variant="secondary" icon={<Pencil className="size-4" />} onClick={() => setEditing(true)}>
+            Edit details
+          </Button>
+          {confirmed && (
+            <Button variant="danger" icon={<Trash2 className="size-4" />} onClick={() => setDeleting(true)}>
+              Delete lecture
+            </Button>
+          )}
+        </div>
       </div>
-      {session.status === "draft" ? <Review session={session} /> : <Record session={session} />}
+      {confirmed ? <Record session={session} /> : <Review session={session} />}
+      <EditDetails key={`${session.date}-${session.topic}`} session={session} open={editing} onClose={() => setEditing(false)} />
+      <Dialog
+        open={deleting}
+        onClose={() => setDeleting(false)}
+        title="Delete this lecture?"
+        description="The lecture and its attendance marks are removed from every student's record. This cannot be undone."
+      >
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={() => setDeleting(false)}>Cancel</Button>
+          <Button variant="danger" loading={remove.isPending} onClick={() => remove.mutate()}>Delete lecture</Button>
+        </div>
+      </Dialog>
     </>
   );
 }

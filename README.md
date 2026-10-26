@@ -59,7 +59,9 @@ For frontend development, run `make api` and `make dev` in two terminals and ope
 
 - **Stack:** Django 6 + Django Ninja (JSON API, session auth with CSRF) and SQLite on the backend; React 19, TypeScript, Vite, Tailwind CSS 4 and TanStack Query on the frontend. Django serves the built frontend, so the whole app runs offline from one process.
 - **Students** sign up, join a course by its code, and register their face with four guided photos (webcam or file). Each photo is checked instantly for one face, size, sharpness, light and head turn, and the aligned face is shown back. Only embeddings are stored, and students can delete them.
-- **Teachers** create courses, upload a class photo, and review every detected face on the photo with its proposed name. They reassign or reject faces (one face per student is enforced), adjust the register and confirm. The photo is then deleted. Course pages show per-lecture and per-student attendance, students below 75%, and CSV export.
+- **Teachers** create courses, upload a class photo, and review every detected face on the photo with its proposed name. They reassign or reject faces (one face per student is enforced), adjust the register and confirm. The photo is then deleted. Course pages show per-lecture and per-student attendance, students below 75%, and CSV export. Teachers can edit or delete a lecture (and its attendance), correct individual marks, edit a course, issue a new join code, remove students, or delete a course.
+- **Students** can leave a course; the attendance already recorded stays with the teacher.
+- **Everyone** has a profile page: name and roll number, password change, and account deletion (which removes face data and attendance).
 
 ## Repository layout
 

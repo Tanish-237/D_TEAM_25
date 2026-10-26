@@ -49,10 +49,14 @@ export function ThemeToggle() {
 }
 
 const links: Record<Role, { to: string; label: string }[]> = {
-  teacher: [{ to: "/teacher", label: "Courses" }],
+  teacher: [
+    { to: "/teacher", label: "Courses" },
+    { to: "/teacher/profile", label: "Profile" },
+  ],
   student: [
     { to: "/student", label: "Attendance" },
     { to: "/student/face", label: "Face registration" },
+    { to: "/student/profile", label: "Profile" },
   ],
 };
 
@@ -95,7 +99,11 @@ export function AppShell({ role }: { role: Role }) {
           <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />
             <div className="mx-2 hidden h-6 w-px bg-line sm:block" />
-            <div className="hidden items-center gap-2.5 sm:flex">
+            <Link
+              to={`/${role}/profile`}
+              className="hidden items-center gap-2.5 rounded-lg py-1 pr-2 pl-1 hover:bg-sunken sm:flex"
+              title="Your profile"
+            >
               <Avatar name={user.name} size={30} />
               <div className="grid leading-tight">
                 <span className="text-[13px] font-medium">{user.name}</span>
@@ -104,7 +112,7 @@ export function AppShell({ role }: { role: Role }) {
                   {user.roll_no && <span className="num"> · {user.roll_no}</span>}
                 </span>
               </div>
-            </div>
+            </Link>
             <button
               onClick={logout}
               className="ml-1 grid size-9 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
