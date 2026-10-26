@@ -1,7 +1,7 @@
 {
  "experiment": "class_eval",
- "created": "2026-10-26T19:02:24+00:00",
- "commit": "12febb5-dirty",
+ "created": "2026-10-26T19:13:21+00:00",
+ "commit": "7e35f53",
  "machine": "arm64 Darwin",
  "config": {
   "photos": 10,
@@ -10,7 +10,7 @@
   "labelled_faces": 804,
   "match_iou": 0.4,
   "threshold_selection": "leave-one-photo-out, max attendance F1",
-  "calibrator": null
+  "calibrator": "experiments/results/calibrator_arcface_r50.json"
  },
  "results": {
   "baseline": {
@@ -122,33 +122,114 @@
    ]
   },
   "full-T": {
-   "precision": 0.9605263157894737,
-   "recall": 0.9864864864864865,
-   "f1": 0.9733333333333333,
+   "precision": 0.9594594594594594,
+   "recall": 0.9594594594594594,
+   "f1": 0.9594594594594594,
    "false_present": 3,
-   "missed": 1,
-   "edits_per_photo": 0.4,
+   "missed": 3,
+   "edits_per_photo": 0.6,
    "friend_faces_named_correctly": 70,
    "friend_faces": 74,
-   "unknown_faces_named": 6,
+   "unknown_faces_named": 4,
    "f1_ci95": [
-    0.9508080455760958,
-    0.9934640522875817
+    0.9249999999999999,
+    0.9875
    ],
    "thresholds": [
-    0.34,
-    0.34,
-    0.34,
-    0.34,
-    0.34,
-    0.34,
-    0.34,
-    0.34,
-    0.34,
-    0.34
+    0.84,
+    0.84,
+    0.84,
+    0.84,
+    0.84,
+    0.84,
+    0.93,
+    0.84,
+    0.84,
+    0.84
    ]
   },
   "full-D": {
+   "precision": 0.9466666666666667,
+   "recall": 0.9594594594594594,
+   "f1": 0.9530201342281879,
+   "false_present": 4,
+   "missed": 3,
+   "edits_per_photo": 0.7,
+   "friend_faces_named_correctly": 71,
+   "friend_faces": 74,
+   "unknown_faces_named": 4,
+   "f1_ci95": [
+    0.918918918918919,
+    0.9820412429578712
+   ],
+   "thresholds": [
+    0.97,
+    0.97,
+    0.97,
+    0.51,
+    0.51,
+    0.98,
+    0.97,
+    0.97,
+    0.97,
+    0.97
+   ]
+  },
+  "full-A": {
+   "precision": 0.96,
+   "recall": 0.972972972972973,
+   "f1": 0.9664429530201343,
+   "false_present": 3,
+   "missed": 2,
+   "edits_per_photo": 0.5,
+   "friend_faces_named_correctly": 72,
+   "friend_faces": 74,
+   "unknown_faces_named": 7,
+   "f1_ci95": [
+    0.9361702127659575,
+    0.9929078014184397
+   ],
+   "thresholds": [
+    0.94,
+    0.94,
+    0.94,
+    0.94,
+    0.94,
+    0.94,
+    0.98,
+    0.94,
+    0.94,
+    0.94
+   ]
+  },
+  "+T+D+C": {
+   "precision": 0.96,
+   "recall": 0.972972972972973,
+   "f1": 0.9664429530201343,
+   "false_present": 3,
+   "missed": 2,
+   "edits_per_photo": 0.5,
+   "friend_faces_named_correctly": 72,
+   "friend_faces": 74,
+   "unknown_faces_named": 7,
+   "f1_ci95": [
+    0.9361702127659575,
+    0.9929078014184397
+   ],
+   "thresholds": [
+    0.94,
+    0.94,
+    0.94,
+    0.94,
+    0.94,
+    0.94,
+    0.98,
+    0.94,
+    0.94,
+    0.94
+   ]
+  },
+  "full": {
    "precision": 0.96,
    "recall": 0.972972972972973,
    "f1": 0.9664429530201343,
@@ -159,47 +240,20 @@
    "friend_faces": 74,
    "unknown_faces_named": 3,
    "f1_ci95": [
-    0.9457364341085273,
-    0.987012987012987
+    0.9361702127659575,
+    0.9929078014184397
    ],
    "thresholds": [
-    0.31,
-    0.31,
-    0.31,
-    0.31,
-    0.31,
-    0.31,
-    0.36,
-    0.31,
-    0.31,
-    0.31
-   ]
-  },
-  "full-A": {
-   "precision": 0.972972972972973,
-   "recall": 0.972972972972973,
-   "f1": 0.972972972972973,
-   "false_present": 2,
-   "missed": 2,
-   "edits_per_photo": 0.4,
-   "friend_faces_named_correctly": 72,
-   "friend_faces": 74,
-   "unknown_faces_named": 6,
-   "f1_ci95": [
-    0.9530201342281879,
-    0.9931057940417546
-   ],
-   "thresholds": [
-    0.35,
-    0.35,
-    0.35,
-    0.35,
-    0.35,
-    0.35,
-    0.38,
-    0.35,
-    0.35,
-    0.35
+    0.94,
+    0.94,
+    0.94,
+    0.94,
+    0.94,
+    0.94,
+    0.98,
+    0.94,
+    0.94,
+    0.94
    ]
   },
   "embedder:arcface_mbf": {
