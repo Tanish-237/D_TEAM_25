@@ -1,0 +1,94 @@
+{
+ "experiment": "class_detection",
+ "created": "2026-10-26T19:14:43+00:00",
+ "commit": "b863a4b",
+ "machine": "arm64 Darwin",
+ "config": {
+  "photos": 10,
+  "match_iou": 0.4,
+  "max_side": 640,
+  "tile": 1280
+ },
+ "results": [
+  {
+   "detector": "scrfd_10g",
+   "tiles": false,
+   "recall": 0.8767295597484277,
+   "found": 697,
+   "labelled": 795,
+   "extra_boxes": 0,
+   "median_height_missed": 47.10000000000002,
+   "ms_per_photo": 91.67578330088872
+  },
+  {
+   "detector": "scrfd_10g",
+   "tiles": true,
+   "recall": 0.9710691823899371,
+   "found": 772,
+   "labelled": 795,
+   "extra_boxes": 5,
+   "median_height_missed": 38.19999999999993,
+   "ms_per_photo": 1098.7870291020954
+  },
+  {
+   "detector": "scrfd_500m",
+   "tiles": false,
+   "recall": 0.8025157232704403,
+   "found": 638,
+   "labelled": 795,
+   "extra_boxes": 5,
+   "median_height_missed": 50.80000000000018,
+   "ms_per_photo": 12.245624995557591
+  },
+  {
+   "detector": "scrfd_500m",
+   "tiles": true,
+   "recall": 0.9433962264150944,
+   "found": 750,
+   "labelled": 795,
+   "extra_boxes": 8,
+   "median_height_missed": 43.40000000000009,
+   "ms_per_photo": 128.19472499977564
+  },
+  {
+   "detector": "yunet",
+   "tiles": false,
+   "recall": 0.8314465408805032,
+   "found": 661,
+   "labelled": 795,
+   "extra_boxes": 58,
+   "median_height_missed": 49.05000000000001,
+   "ms_per_photo": 20.34233320009662
+  },
+  {
+   "detector": "yunet",
+   "tiles": true,
+   "recall": 0.9610062893081761,
+   "found": 764,
+   "labelled": 795,
+   "extra_boxes": 66,
+   "median_height_missed": 44.80000000000007,
+   "ms_per_photo": 102.54313320037909
+  },
+  {
+   "detector": "haar",
+   "tiles": false,
+   "recall": 0.050314465408805034,
+   "found": 40,
+   "labelled": 795,
+   "extra_boxes": 0,
+   "median_height_missed": 74.39999999999986,
+   "ms_per_photo": 44.608920902828686
+  },
+  {
+   "detector": "haar",
+   "tiles": true,
+   "recall": 0.7459119496855345,
+   "found": 593,
+   "labelled": 795,
+   "extra_boxes": 38,
+   "median_height_missed": 46.64999999999998,
+   "ms_per_photo": 331.93413330009207
+  }
+ ]
+}
