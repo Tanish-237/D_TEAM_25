@@ -1,4 +1,4 @@
-.PHONY: setup models test lint format check guard bundle
+.PHONY: setup models test lint format check guard bundle web demo
 
 setup:
 	uv sync
@@ -28,3 +28,9 @@ bundle:
 	git archive --format=zip -o dist/quickpic-src.zip HEAD
 	cd dist && zip -q quickpic-src.zip COMMIT && rm COMMIT
 	@echo "Upload dist/quickpic-src.zip to Google Drive: MyDrive/QuickPic/"
+
+web:
+	cd web && uv run python manage.py migrate --verbosity 0 && uv run python manage.py runserver
+
+demo:
+	cd web && uv run python manage.py migrate --verbosity 0 && uv run python manage.py seed_demo ../data/class/enroll

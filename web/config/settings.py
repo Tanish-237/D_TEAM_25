@@ -8,7 +8,7 @@ REPO_DIR = BASE_DIR.parent
 
 SECRET_KEY = os.environ.get("QUICKPIC_SECRET_KEY", "local-demo-only-change-me")
 DEBUG = os.environ.get("QUICKPIC_DEBUG", "1") == "1"
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "testserver"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
