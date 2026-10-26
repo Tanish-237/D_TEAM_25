@@ -1,0 +1,523 @@
+<title>QuickPic Research Report</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a paper sheet; front matter full width, each section's prose flows in two columns on wide screens, tables and figures span both. */
+:root {
+  --paper: #fbfcfd;
+  --sheet: #ffffff;
+  --ink: #1a2230;
+  --muted: #586376;
+  --rule: #d7dde6;
+  --accent: #24578a;
+  --accent-soft: #e7eef7;
+  --done-fg: #2d6a3e; --done-bg: #e2f0e5;
+  --wip-fg: #8a5a00;  --wip-bg: #fbf0d9;
+  --plan-fg: #4b5668; --plan-bg: #eceff4;
+  --font-body: "STIX Two Text", "Times New Roman", Times, serif;
+  --font-head: "IBM Plex Sans Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #10141a; --sheet: #161b23; --ink: #e2e6ed; --muted: #9ba6b6; --rule: #2a323e;
+    --accent: #86b4e2; --accent-soft: #1b2939;
+    --done-fg: #93cfa1; --done-bg: #17291c;
+    --wip-fg: #e6b866;  --wip-bg: #2d2513;
+    --plan-fg: #aab4c3; --plan-bg: #222a35;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #10141a; --sheet: #161b23; --ink: #e2e6ed; --muted: #9ba6b6; --rule: #2a323e;
+  --accent: #86b4e2; --accent-soft: #1b2939;
+  --done-fg: #93cfa1; --done-bg: #17291c;
+  --wip-fg: #e6b866;  --wip-bg: #2d2513;
+  --plan-fg: #aab4c3; --plan-bg: #222a35;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--font-body); font-size: 16.5px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.sheet {
+  max-width: 1120px; margin: 0 auto; background: var(--sheet);
+  border: 1px solid var(--rule); padding: clamp(20px, 4vw, 56px);
+}
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.stamp {
+  display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 12px; color: var(--muted);
+  border-bottom: 1px solid var(--rule); padding-bottom: 12px; margin-bottom: 28px;
+}
+h1 {
+  font-family: var(--font-body); font-weight: 600; font-size: clamp(26px, 3.6vw, 38px);
+  line-height: 1.18; text-align: center; text-wrap: balance; margin: 0 auto 18px; max-width: 26ch;
+}
+.authors {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px 16px;
+  text-align: center; margin: 0 auto 6px; max-width: 900px;
+}
+.authors div { display: flex; flex-direction: column; }
+.authors b { font-weight: 600; }
+.authors span { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+.affil { text-align: center; font-style: italic; color: var(--muted); margin: 6px 0 30px; text-wrap: balance; }
+
+.abstract { max-width: 820px; margin: 0 auto 10px; text-align: justify; hyphens: auto; }
+.abstract p { margin: 0 0 10px; }
+.lead-in { font-weight: 600; font-style: italic; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 22px 0 8px; align-items: center; }
+.legend small { font-family: var(--font-head); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; font-size: 11.5px; }
+
+.chip {
+  display: inline-block; font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  letter-spacing: .03em; padding: 2px 8px; border-radius: 3px; vertical-align: middle; white-space: nowrap;
+}
+.chip.done { color: var(--done-fg); background: var(--done-bg); }
+.chip.wip  { color: var(--wip-fg);  background: var(--wip-bg); }
+.chip.plan { color: var(--plan-fg); background: var(--plan-bg); }
+
+section { border-top: 1px solid var(--rule); margin-top: 34px; padding-top: 22px; }
+h2 {
+  font-family: var(--font-head); font-weight: 600; font-size: 15px; letter-spacing: .08em;
+  text-transform: uppercase; margin: 0 0 14px; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center;
+}
+h2 .num { color: var(--accent); }
+h3 { font-family: var(--font-body); font-style: italic; font-weight: 600; font-size: 16.5px; margin: 16px 0 6px; break-after: avoid; }
+.cols p, .cols li { text-align: justify; hyphens: auto; }
+.cols p { margin: 0 0 11px; }
+.cols ol, .cols ul { margin: 0 0 11px; padding-left: 1.3em; }
+@media (min-width: 900px) {
+  .cols { columns: 2; column-gap: 40px; column-rule: 1px solid var(--rule); }
+  .cols > * { break-inside: avoid-column; }
+  .cols p { break-inside: auto; }
+}
+.eq { overflow-x: auto; margin: 10px 0 12px; break-inside: avoid; }
+.eq-row { display: flex; align-items: center; gap: 12px; }
+.eq-row > div:first-child { flex: 1; min-width: 0; }
+.eq-no { font-family: var(--font-body); color: var(--muted); }
+
+.wide { margin: 18px 0; min-width: 0; }
+.scroll { overflow-x: auto; }
+figure { margin: 18px 0; }
+figcaption, .tcap {
+  font-family: var(--font-body); font-size: 14px; color: var(--muted); margin: 8px 0 0; text-wrap: pretty;
+}
+.tcap { margin: 0 0 8px; text-align: center; }
+.tcap b, figcaption b { color: var(--ink); font-family: var(--font-head); letter-spacing: .05em; text-transform: uppercase; font-size: 12px; margin-right: 6px; }
+
+table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 10px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--rule); }
+thead th {
+  font-family: var(--font-head); font-weight: 600; font-size: 12px; letter-spacing: .05em; text-transform: uppercase;
+  border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--ink); white-space: nowrap;
+}
+tbody tr:last-child td { border-bottom: 1.5px solid var(--ink); }
+td.c, th.c { text-align: center; }
+td.pending { text-align: center; color: var(--muted); font-family: var(--font-mono); font-size: 12px; }
+.mono { font-family: var(--font-mono); font-size: 12.5px; }
+.yes { color: var(--accent); font-weight: 600; }
+.no { color: var(--muted); }
+
+.pipeline svg { display: block; min-width: 760px; width: 100%; height: auto; }
+.pipeline .box { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.2; }
+.pipeline .ours { fill: var(--wip-bg); stroke: var(--wip-fg); stroke-width: 1.2; stroke-dasharray: 4 3; }
+.pipeline .t1 { fill: var(--ink); font-family: var(--font-head); font-size: 13px; font-weight: 600; }
+.pipeline .t2 { fill: var(--muted); font-family: var(--font-body); font-size: 12px; }
+.pipeline .tag { fill: var(--wip-fg); font-family: var(--font-mono); font-size: 10.5px; }
+.pipeline .arrow { stroke: var(--muted); stroke-width: 1.3; fill: none; }
+.pipeline .head { fill: var(--muted); }
+
+.log { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.log li { display: grid; grid-template-columns: 110px 1fr; gap: 14px; }
+.log .when { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); padding-top: 2px; }
+.log p { margin: 0; text-align: left; }
+@media (max-width: 520px) { .log li { grid-template-columns: 1fr; gap: 2px; } }
+
+.refs { padding-left: 0; list-style: none; margin: 0; font-size: 14.5px; }
+.refs li { display: grid; grid-template-columns: 34px 1fr; gap: 4px; margin-bottom: 6px; text-align: left; break-inside: avoid; }
+.refs .rn { color: var(--muted); font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<script>
+window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]] }, svg: { fontCache: "global" } };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js" defer></script>
+
+<main class="sheet">
+  <div class="stamp">
+    <span>IPCV course project · Semester VII · Team 25</span>
+    <span>Working draft v0.6 · 27 Oct 2026</span>
+  </div>
+
+  <h1>QuickPic: Open-Set Face Recognition for Classroom Attendance from a Single Group Photograph</h1>
+
+  <div class="authors">
+    <div><b>Shashank Kanaujiya</b><span>20233259</span></div>
+    <div><b>Tanish Mittal</b><span>20233288</span></div>
+    <div><b>Utkarsh Raj Singh</b><span>20233298</span></div>
+    <div><b>Shinde Ritesh Tirupati</b><span>20233350</span></div>
+  </div>
+  <p class="affil">Motilal Nehru National Institute of Technology Allahabad, Prayagraj, India</p>
+
+  <div class="abstract">
+    <p><span class="lead-in">Abstract</span>: Taking attendance from one photograph of a classroom is difficult. A typical photo contains dozens of faces that are small, turned away and unevenly lit, and most people in the room are not enrolled in the system at all. We present QuickPic, an attendance pipeline that detects every face in a single class photo, recognises the enrolled students and marks every other face as unknown rather than forcing a match. The detector and the face-embedding network are pretrained and frozen. Our contribution is a classroom-aware decision layer on top of them with four parts. Tiled detection recovers small faces. Degradation-aware enrollment makes the stored templates resemble classroom conditions. A quality-aware calibration converts raw similarity into a match probability. A one-to-one assignment ensures that no student is claimed by two faces in the same photo. We evaluate each component in an ablation study on public benchmarks (LFW, TinyFace, and an Indian classroom sample from ICFD) and on real photographs of our own class. On ten real class photographs with 804 labelled faces, the deployed pipeline produces attendance lists with F1 0.973 and needs fewer than one teacher correction per photo. Compared with the pretrained baseline, it cuts the number of non-enrolled faces given an enrolled student's name from 21 to 2. Tiling raises detection recall from 0.877 to 0.971. Quality-aware calibration helps for faces below 20 pixels but not at classroom face sizes.</p>
+    <p><span class="lead-in">Index Terms</span>: face detection, open-set face recognition, low-resolution faces, score calibration, assignment problem, attendance systems.</p>
+  </div>
+
+  <div class="legend">
+    <small>Section status</small>
+    <span class="chip done">done</span>
+    <span class="chip wip">in progress</span>
+    <span class="chip plan">planned</span>
+  </div>
+
+  <section id="intro">
+    <h2><span class="num">I.</span> Introduction <span class="chip wip">drafted</span></h2>
+    <div class="cols">
+      <p>Roll call takes several minutes of every lecture, and sign-in sheets invite proxy attendance. Face recognition is a natural replacement, but most attendance systems assume one person at a time in front of a camera. We study the harder and more practical setting. The teacher takes one photograph of the whole room and the system produces a draft attendance list, which the teacher confirms or corrects.</p>
+      <p>Three properties of classroom photos make this a computer vision problem rather than a database lookup. First, faces at the back of a room may be only 20 to 40 pixels tall, below the scale at which detectors and recognisers are usually evaluated. Second, students look in different directions and sit under uneven lighting. Third, the task is <em>open-set</em>: in our class of 70 to 90 students, only a minority are enrolled, so most detected faces must be rejected as unknown. A system that always returns its nearest enrolled student would mark absent students present, which is the error that matters most for attendance.</p>
+      <p>Our contributions are:</p>
+      <ol>
+        <li>an end-to-end, CPU-only pipeline from a single class photograph to an editable attendance list;</li>
+        <li>a classroom-aware decision layer with four separately switchable components (tiled detection, degradation-aware enrollment, quality-aware calibration and photo-level one-to-one assignment), placed on top of frozen pretrained networks;</li>
+        <li>an ablation study of each component on public benchmarks and on real photographs of our own class, reported with attendance-level metrics such as the false-present count;</li>
+        <li>a working web system in which students enroll themselves and teachers review and confirm the detected list.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="related">
+    <h2><span class="num">II.</span> Related Work <span class="chip wip">drafted</span></h2>
+    <div class="cols">
+      <h3>Face detection.</h3>
+      <p>Viola and Jones [1] made real-time detection practical with Haar-like features and a boosted cascade, and their detector remains the classical baseline. WIDER FACE [2] showed how far such detectors fall short on small, occluded and turned faces, and its Hard subset is still the standard test for small faces. Modern detectors are convolutional networks that predict boxes and landmarks directly. SCRFD [3] redistributes computation across scales to make small faces cheaper to find, and YuNet [4] is a detector under 100k parameters intended for CPUs. Slicing an image into overlapping tiles before detection improves recall on small objects without retraining [20].</p>
+      <h3>Face recognition.</h3>
+      <p>Classical recognisers describe a face with hand-crafted texture features. Local binary pattern histograms [5] are the best-known example. Deep recognisers instead learn an embedding in which faces of the same person lie close together. ArcFace [6] trains such embeddings with an additive angular margin and is the basis of most current open models. SFace [7] and MobileFaceNets [8] target lightweight inference. The pretrained models we use were trained on WebFace data [9].</p>
+      <h3>Low-resolution and quality-aware recognition.</h3>
+      <p>Recognition accuracy drops sharply as face resolution falls. TinyFace [11] provides natively low-resolution faces, averaging about 20×16 pixels, together with a 1:N identification protocol. MagFace [12] and QMagFace [13] show that a face-quality estimate can be folded into the comparison score, so that poor-quality faces are judged by a different standard. We use the variance of the Laplacian [19] as a simple sharpness measure. Closest to our setting, Bhattacharjee and Das [21] collected the Indian Classroom Face Dataset at IIT Madras and trained a generative network to enhance low-resolution classroom faces before recognition. We instead keep the recognition network frozen and adapt only the decision layer, which requires no face images from the target classroom beyond enrollment. Mery <i>et al.</i> [22] built an attendance system for crowded classrooms of about 70 students from smartphone photographs. Comparing ten recognisers, they found FaceNet best, at about 95% accuracy with one enrollment image per student. Their evaluation is closed-set, whereas ours must also reject the many non-enrolled people in the room.</p>
+      <h3>Group photographs and open-set recognition.</h3>
+      <p>Gallagher and Chen [14] showed that the context of a group photo, such as who stands next to whom and how many people appear, carries information that per-face recognition ignores. Open-set recognition [15], [16] formalises the requirement that a system must reject identities it has never seen. Identification error rates in this setting are reported as false-negative and false-positive identification rates at a fixed operating point [18]. Our one-to-one constraint is an assignment problem, which the Hungarian method [17] solves exactly.</p>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2><span class="num">III.</span> Method <span class="chip done">implemented</span></h2>
+
+    <figure class="wide pipeline">
+      <div class="scroll">
+        <svg viewBox="0 0 1000 170" role="img" aria-label="Pipeline: class photo, tiled detection, alignment, embedding, calibrated matching, one-to-one assignment, attendance list">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path class="head" d="M0,0 L10,5 L0,10 z"/>
+            </marker>
+          </defs>
+          <rect class="box" x="4" y="40" width="112" height="76" rx="3"/>
+          <text class="t1" x="60" y="70" text-anchor="middle">Class photo</text>
+          <text class="t2" x="60" y="90" text-anchor="middle">one image,</text>
+          <text class="t2" x="60" y="105" text-anchor="middle">70–90 people</text>
+
+          <rect class="ours" x="146" y="40" width="130" height="76" rx="3"/>
+          <text class="t1" x="211" y="66" text-anchor="middle">1 · Detect</text>
+          <text class="t2" x="211" y="86" text-anchor="middle">boxes + 5 landmarks</text>
+          <text class="tag" x="211" y="104" text-anchor="middle">+ tiling (ours)</text>
+
+          <rect class="box" x="306" y="40" width="120" height="76" rx="3"/>
+          <text class="t1" x="366" y="66" text-anchor="middle">2 · Align</text>
+          <text class="t2" x="366" y="86" text-anchor="middle">similarity warp</text>
+          <text class="t2" x="366" y="101" text-anchor="middle">to 112×112</text>
+
+          <rect class="box" x="456" y="40" width="120" height="76" rx="3"/>
+          <text class="t1" x="516" y="66" text-anchor="middle">3 · Embed</text>
+          <text class="t2" x="516" y="86" text-anchor="middle">frozen CNN</text>
+          <text class="t2" x="516" y="101" text-anchor="middle">→ unit vector</text>
+
+          <rect class="ours" x="606" y="40" width="140" height="76" rx="3"/>
+          <text class="t1" x="676" y="66" text-anchor="middle">4 · Match</text>
+          <text class="t2" x="676" y="86" text-anchor="middle">vs. enrolled gallery</text>
+          <text class="tag" x="676" y="104" text-anchor="middle">+ degraded gallery, calib.</text>
+
+          <rect class="ours" x="776" y="40" width="110" height="76" rx="3"/>
+          <text class="t1" x="831" y="66" text-anchor="middle">5 · Assign</text>
+          <text class="t2" x="831" y="86" text-anchor="middle">one face per</text>
+          <text class="tag" x="831" y="104" text-anchor="middle">student (ours)</text>
+
+          <rect class="box" x="906" y="40" width="90" height="76" rx="3"/>
+          <text class="t1" x="951" y="70" text-anchor="middle">Draft list</text>
+          <text class="t2" x="951" y="90" text-anchor="middle">teacher</text>
+          <text class="t2" x="951" y="105" text-anchor="middle">confirms</text>
+
+          <path class="arrow" d="M116,78 H142" marker-end="url(#ah)"/>
+          <path class="arrow" d="M276,78 H302" marker-end="url(#ah)"/>
+          <path class="arrow" d="M426,78 H452" marker-end="url(#ah)"/>
+          <path class="arrow" d="M576,78 H602" marker-end="url(#ah)"/>
+          <path class="arrow" d="M746,78 H772" marker-end="url(#ah)"/>
+          <path class="arrow" d="M886,78 H902" marker-end="url(#ah)"/>
+
+          <text class="t2" x="500" y="152" text-anchor="middle">Solid boxes: pretrained, frozen components. Dashed boxes: the classroom-aware decision layer we contribute.</text>
+        </svg>
+      </div>
+      <figcaption><b>Fig. 1</b> The QuickPic pipeline. Every stage sits behind a common interface, so each comparison and ablation is a configuration change.</figcaption>
+    </figure>
+
+    <div class="cols">
+      <h3>A. Detection and alignment.</h3>
+      <p>A detector returns a bounding box and five landmarks (eyes, nose tip, mouth corners) for each face. We compare a Haar cascade [1], YuNet [4] and SCRFD [3]. Detectors normally resize the whole photo to a fixed input such as 640×640, so in a 4000-pixel-wide group photo a 40-pixel face shrinks to about 6 pixels and is lost. <em>Tiled detection</em> runs the detector on overlapping tiles of size \(t\) with overlap \(o\) at native resolution, together with one pass over the full image. It then merges the detections with non-maximum suppression at an IoU threshold \(\theta_{\text{nms}}\). Each face is aligned by the similarity transform that maps its five landmarks onto a fixed template, producing a 112×112 crop.</p>
+
+      <h3>B. Embedding and baseline matching.</h3>
+      <p>A frozen network \(\phi\) maps each aligned face to an L2-normalised embedding \(f_i=\phi(x_i)\) of dimension \(d\) (512 for ArcFace, 128 for SFace). Student \(j\) is enrolled with a gallery \(G_j\) of embeddings from their enrollment photos. The baseline scores face \(i\) against student \(j\) by the best cosine similarity:</p>
+      <div class="eq"><div class="eq-row"><div>\[ S_{ij} \;=\; \max_{g \in G_j} \; f_i^{\top} g \]</div><span class="eq-no">(1)</span></div></div>
+      <p>It assigns each face to its best-scoring student if that score exceeds a global threshold \(\tau\), and marks it unknown otherwise.</p>
+
+      <h3>C. Degradation-aware enrollment.</h3>
+      <p>Enrollment photos are sharp and close-up, while classroom faces are small, blurred and badly lit. We enlarge each gallery with synthetic copies \(T_k(x)\) of every enrollment photo \(x \in E_j\). The degradations are downscaling to 16–48 pixels and back, Gaussian blur, gamma and brightness shifts, JPEG compression and horizontal flips:</p>
+      <div class="eq"><div class="eq-row"><div>\[ G_j \;=\; \{\, \phi\big(T_k(x)\big) \;:\; x \in E_j,\; k = 0,\dots,K \,\} \]</div><span class="eq-no">(2)</span></div></div>
+
+      <h3>D. Quality-aware score calibration.</h3>
+      <p>Even a correct match scores lower when the face is small or blurred, and unrelated low-quality faces also look more alike, so a single threshold is too strict for some faces and too lenient for others. We fit a logistic regression that turns the raw score into a match probability, conditioned on the face height \(h_i\) in pixels and the sharpness \(b_i\) (variance of the Laplacian). The product term lets the slope of the score change with face size:</p>
+      <div class="eq"><div class="eq-row"><div>\[ P_{ij} \;=\; \sigma\!\big(w_0 + w_1 S_{ij} + w_2 \log h_i + w_3 \log(1+b_i) + w_4\, S_{ij} \log h_i\big) \]</div><span class="eq-no">(3)</span></div></div>
+      <p>The weights are fitted on 46,494 genuine and impostor pairs from LFW people with at least two photographs. The first photograph of each person is kept clean as the enrollment, and the others are degraded to a random face height between 12 and 112 pixels, with random blur and brightness. People are split 70/30, so the model is tested on people it never saw, and no class photograph influences it.</p>
+
+      <h3>E. Photo-level one-to-one assignment.</h3>
+      <p>A student appears at most once in a photograph. Independent per-face decisions can still give two faces the same name. We decide all faces in a photo jointly by solving</p>
+      <div class="eq"><div class="eq-row"><div>\[ \max_{z \in \{0,1\}^{F \times N}} \sum_{i,j} z_{ij}\,\big(P_{ij} - \tau\big) \quad \text{s.t.} \quad \sum_j z_{ij} \le 1,\;\; \sum_i z_{ij} \le 1 \]</div><span class="eq-no">(4)</span></div></div>
+      <p>where \(F\) is the number of faces and \(N\) the number of students on the course roster. Padding the matrix with one zero-valued "unknown" column per face makes this a square assignment problem, which the Hungarian method [17] solves exactly. A pair with \(P_{ij} &lt; \tau\) has negative value and is never chosen, so the open-set rejection is kept.</p>
+    </div>
+  </section>
+
+  <section id="protocol">
+    <h2><span class="num">IV.</span> Experimental Protocol <span class="chip done">done</span></h2>
+
+    <div class="wide">
+      <p class="tcap"><b>Table I</b> Datasets, their role and their terms of use</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Dataset</th><th>Content</th><th>Role here</th><th>Terms of use</th></tr></thead>
+          <tbody>
+            <tr><td>LFW [10]</td><td>13,233 web images of 5,749 people</td><td>Verification sanity check; training pairs for the calibrator (with synthetic degradation)</td><td>No formal licence on the official site; research use, images not redistributed</td></tr>
+            <tr><td>TinyFace [11]</td><td>169,403 native low-resolution faces (≈20×16 px), 5,139 labelled identities, 1:N protocol with distractors</td><td>Main public test of open-set identification on small faces</td><td>Direct download; no licence stated on the official page; research use with citation, no redistribution</td></tr>
+            <tr><td>ICFD [21] (IIT Madras)</td><td>Indian students: gallery photographed in a lab, probes cropped from classroom and seminar-room footage (DSLR and phone). Public sample: 10 subjects, 200 gallery and 200 probe images, probe median height 60 px. The full set has 84 subjects and about 185k faces.</td><td>In-domain test on Indian classroom faces</td><td>Non-commercial research only. The sample is a direct download. The full set needs a licence signed under an institutional seal and was not requested. Papers using it are sent to the dataset's PI.</td></tr>
+            <tr><td>Our class</td><td>10 enrolled classmates (38 enrollment photos, 2–6 each, taken in 2026). 10 class photographs from 2024 (mostly 4032×3024 phone photos), 69–102 faces each: 804 labelled faces, 74 of them enrolled students, 9 marked as not a face</td><td>Real-world test; held out from all fitting</td><td>Enrolled classmates gave permission; photos stay on the authors' machine and are never published</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="cols">
+      <p>Calibrator weights are fitted on public data only. Our class data is strongly open-set: about 90% of the labelled faces belong to people who are not enrolled and must be rejected as unknown. The class photographs were taken two years before the enrollment photographs, so the system must also cope with ageing and changed appearance. The decision threshold is never tuned on the photograph being scored. For each photograph it is chosen to maximise attendance F1 on the other nine (leave-one-photo-out). Photo-level 95% confidence intervals come from 2,000 bootstrap resamples of the ten photographs.</p>
+      <p>Ground truth for the class photographs was produced by the authors with a local labelling tool. The tool shows every face found by tiled SCRFD at a low threshold (0.3), so that as few faces as possible are missed. Each face is tagged with an enrolled identity, left as unknown or marked as not a face. A detected face takes the label of the labelled box it overlaps at IoU ≥ 0.4. Detections that match no labelled face, and boxes marked as not a face, must be rejected as unknown. The WIDER FACE comparison was dropped for time; detection is evaluated on the synthetic sweep (Table III-a) and on the class photographs.</p>
+    </div>
+
+    <div class="wide">
+      <p class="tcap"><b>Table II</b> Evaluation metrics</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Level</th><th>Metric</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td>Detection</td><td>AP (Easy / Med / Hard); recall by face height</td><td>How many faces are found, and at what size detection fails</td></tr>
+            <tr><td>Verification</td><td>TAR @ FAR = 10<sup>−3</sup></td><td>Share of genuine pairs accepted when 1 in 1,000 impostor pairs is falsely accepted</td></tr>
+            <tr><td>Open-set ID</td><td>DIR @ FAR = 1%; FNIR / FPIR [18]</td><td>Share of enrolled faces correctly identified when 1% of unknown faces are falsely matched</td></tr>
+            <tr><td>Attendance</td><td>Precision, recall, F1 of the present list</td><td>Quality of the draft list the teacher receives</td></tr>
+            <tr><td>Attendance</td><td>False-present count</td><td>Students marked present who were not in the photo; the costliest error</td></tr>
+            <tr><td>Usability</td><td>Teacher edits per photo</td><td>Corrections needed before the list is confirmed</td></tr>
+            <tr><td>System</td><td>CPU latency per photo</td><td>Time from upload to draft list on the host machine</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="results">
+    <h2><span class="num">V.</span> Results <span class="chip done">complete</span></h2>
+
+    <div class="wide">
+      <p class="tcap"><b>Table III-a</b> Synthetic check of tiled detection: recall at each face height when InsightFace's 6-person sample photo is shrunk and placed at 3 positions in a 4000×3000 canvas (18 faces per cell). Detector input 640 px; tiles 1280 px with 25% overlap; a face counts as found at IoU ≥ 0.4. Source: <span class="mono">experiments/results/tiling_synthetic.json</span>, commit a327fd5.</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Detector</th><th class="c">16 px</th><th class="c">20</th><th class="c">24</th><th class="c">28</th><th class="c">32</th><th class="c">40</th><th class="c">64</th><th class="c">96</th><th class="c">128</th><th class="c">ms / photo</th></tr></thead>
+          <tbody>
+            <tr><td>SCRFD-10GF</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.56</td><td class="c">1.00</td><td class="c">1.00</td><td class="c">88</td></tr>
+            <tr><td>SCRFD-10GF + tiles</td><td class="c">0.11</td><td class="c">0.44</td><td class="c">0.94</td><td class="c yes">1.00</td><td class="c yes">1.00</td><td class="c yes">1.00</td><td class="c yes">1.00</td><td class="c">1.00</td><td class="c">1.00</td><td class="c">1238</td></tr>
+            <tr><td>SCRFD-500MF</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.67</td><td class="c">1.00</td><td class="c">11</td></tr>
+            <tr><td>SCRFD-500MF + tiles</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.22</td><td class="c">0.67</td><td class="c">0.89</td><td class="c yes">1.00</td><td class="c yes">1.00</td><td class="c">1.00</td><td class="c">1.00</td><td class="c">137</td></tr>
+            <tr><td>YuNet</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.67</td><td class="c">0.94</td><td class="c">20</td></tr>
+            <tr><td>YuNet + tiles</td><td class="c">0.00</td><td class="c">0.11</td><td class="c">0.33</td><td class="c">0.50</td><td class="c">0.72</td><td class="c yes">1.00</td><td class="c yes">1.00</td><td class="c">1.00</td><td class="c">1.00</td><td class="c">105</td></tr>
+            <tr><td>Haar (CLAHE)</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">22</td></tr>
+            <tr><td>Haar (CLAHE) + tiles</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.00</td><td class="c">0.33</td><td class="c">0.50</td><td class="c">0.56</td><td class="c">114</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="cols">
+      <p>Without tiling, every detector misses all faces below 48 pixels in a 4000-pixel-wide photo, because the photo is shrunk 6.25 times before detection. Tiling lowers the smallest reliably detected face for SCRFD-10GF from 96 to 28 pixels, at about 14 times the computation (1.2 s per photo on an Apple M2 CPU). The lightweight SCRFD-500MF with tiles is still slower than SCRFD-10GF alone, but it reaches full recall at 40 pixels, which makes it a candidate for the deployed system. The Haar cascade fails below about 64 pixels even with tiles. This is a controlled check on a single source photo; the decisive test is the class photographs.</p>
+    </div>
+
+    <div class="wide">
+      <p class="tcap"><b>Table III</b> Detection recall on our class photographs (10 photos, 795 labelled faces; detector input 640 px, tiles 1280 px). "Extra" counts boxes that overlap no labelled face. The labelled faces were proposed by tiled SCRFD-10GF at a low threshold and corrected by hand, which slightly favours that configuration. CPU time on an Apple M2. Source: <span class="mono">experiments/results/class_detection.json</span>, commit b863a4b.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Detector</th><th class="c">Recall</th><th class="c">Found</th><th class="c">Extra</th><th class="c">ms / photo</th></tr></thead>
+        <tbody><tr><td>SCRFD-10GF [3]</td><td class="c">0.877</td><td class="c">697/795</td><td class="c">0</td><td class="c">92</td></tr><tr><td>SCRFD-10GF [3] + tiles</td><td class="c yes">0.971</td><td class="c">772/795</td><td class="c">5</td><td class="c">1099</td></tr><tr><td>SCRFD-500MF [3]</td><td class="c">0.803</td><td class="c">638/795</td><td class="c">5</td><td class="c">12</td></tr><tr><td>SCRFD-500MF [3] + tiles</td><td class="c">0.943</td><td class="c">750/795</td><td class="c">8</td><td class="c">128</td></tr><tr><td>YuNet [4]</td><td class="c">0.831</td><td class="c">661/795</td><td class="c">58</td><td class="c">20</td></tr><tr><td>YuNet [4] + tiles</td><td class="c">0.961</td><td class="c">764/795</td><td class="c">66</td><td class="c">103</td></tr><tr><td>Haar cascade [1] (CLAHE)</td><td class="c">0.050</td><td class="c">40/795</td><td class="c">0</td><td class="c">45</td></tr><tr><td>Haar cascade [1] (CLAHE) + tiles</td><td class="c">0.746</td><td class="c">593/795</td><td class="c">38</td><td class="c">332</td></tr></tbody>
+      </table></div>
+    </div>
+    <div class="cols">
+      <p>Tiling raises recall for every detector: from 0.877 to 0.971 for SCRFD-10GF, and from 0.050 to 0.746 for the Haar cascade, which finds almost nothing once a 4032-pixel photo is shrunk to 640 pixels. The lightweight SCRFD-500MF with tiles (0.943 in 0.13 s) is a good choice where speed matters. YuNet's recall is close to SCRFD's, but it produces many more spurious boxes.</p>
+    </div>
+
+    <div class="wide">
+      <p class="tcap"><b>Table III-b</b> In-domain check on the ICFD sample (IIT Madras): 10 Indian students enrolled from lab photographs, tested on 200 classroom crops (median height 60 px). Open set: 5 enrolled, 5 act as unknown people, 20 splits, DIR at 5% false alarm rate (mean ± s.d.). D = degradation-aware enrollment. Source: <span class="mono">experiments/results/icfd_sample.json</span>, commit 476058d.</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Embedder</th><th class="c">Rank-1</th><th class="c">Rank-1 + D</th><th class="c">Open-set DIR</th><th class="c">Open-set DIR + D</th></tr></thead>
+          <tbody>
+            <tr><td>ArcFace ResNet-50</td><td class="c yes">0.985</td><td class="c">0.985</td><td class="c yes">0.948 ± 0.019</td><td class="c">0.945 ± 0.023</td></tr>
+            <tr><td>ArcFace MobileFaceNet</td><td class="c">0.980</td><td class="c">0.980</td><td class="c">0.894 ± 0.035</td><td class="c">0.901 ± 0.028</td></tr>
+            <tr><td>SFace</td><td class="c">0.955</td><td class="c">0.950</td><td class="c">0.862 ± 0.045</td><td class="c">0.882 ± 0.023</td></tr>
+            <tr><td>LBP histograms</td><td class="c">0.080</td><td class="c">0.210</td><td class="c">0.013 ± 0.016</td><td class="c">0.046 ± 0.036</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="cols">
+      <p>The pretrained ArcFace ResNet-50 recognises Indian students in real classroom footage almost perfectly in this closed set of 10 people, which supports our decision not to retrain on Indian faces. LBP histograms are close to chance (0.10 for 10 subjects): hand-crafted texture features do not transfer from lab photographs to classroom photographs. Degraded enrollment copies help the weaker deep models slightly and leave the strongest unchanged, but with 200 probes these differences lie within one standard deviation. ICFD probes are 60 pixels tall, larger than the faces at the back of our class photographs, so the decisive test of component D is our own data.</p>
+    </div>
+
+    <div class="wide">
+      <p class="tcap"><b>Table IV</b> Embedder comparison on public benchmarks. LFW: 6,000 pairs, 10-fold accuracy and TAR at FAR = 10<sup>−3</sup>. TinyFace: official closed-set protocol with all 153,428 distractors (rank-1), and our open-set protocol with half of the 2,569 identities enrolled and 155,254 unknown probes (DIR at 1% FAR, mean ± s.d. over 5 splits). Source: <span class="mono">experiments/results/public_benchmarks_*.json</span>, commit 33942a6.</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Embedder</th><th class="c">LFW acc.</th><th class="c">LFW TAR@10<sup>−3</sup></th><th class="c">TinyFace rank-1</th><th class="c">TinyFace rank-20</th><th class="c">TinyFace DIR@1%</th></tr></thead>
+          <tbody>
+            <tr><td>LBP histograms [5]</td><td class="c">0.585</td><td class="c">0.035</td><td class="c">0.200</td><td class="c">0.333</td><td class="c">0.164 ± 0.006</td></tr>
+            <tr><td>SFace [7]</td><td class="c">0.994</td><td class="c">0.989</td><td class="c">0.261</td><td class="c">0.407</td><td class="c">0.172 ± 0.034</td></tr>
+            <tr><td>ArcFace MobileFaceNet [6], [8]</td><td class="c">0.995</td><td class="c">0.990</td><td class="c">0.369</td><td class="c">0.527</td><td class="c yes">0.210 ± 0.005</td></tr>
+            <tr><td>ArcFace ResNet-50 [6]</td><td class="c yes">0.998</td><td class="c yes">0.996</td><td class="c yes">0.433</td><td class="c yes">0.562</td><td class="c">0.150 ± 0.006</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="cols">
+      <p>On large, clear LFW faces the three deep models are nearly indistinguishable, and LBP is barely above chance. On TinyFace's natively tiny faces every model degrades sharply. The two orderings disagree. ResNet-50 retrieves the right identity most often (rank-1 0.433), but under the open-set protocol it detects and identifies fewer enrolled faces at a 1% false-alarm rate than MobileFaceNet (0.150 against 0.210). For tiny faces, ResNet-50 also gives unknown people high similarity scores, so a single global threshold must be set very high and then rejects many genuine matches. This is the failure mode that quality-aware calibration (component C) addresses.</p>
+    </div>
+
+    <div class="wide">
+      <p class="tcap"><b>Table IV-b</b> Quality-aware calibration (C) for ArcFace ResNet-50 on held-out LFW people (20,517 test pairs; enrollment clean, probe degraded to the given face height). One global operating point at 1% FAR on all test impostors; TAR and FAR per height. Source: <span class="mono">experiments/results/calibration_arcface_r50.json</span>, commit 1aaf3a2.</p>
+      <div class="scroll"><table>
+        <thead><tr><th class="c">Face height (px)</th><th class="c">TAR raw</th><th class="c">TAR calibrated</th><th class="c">FAR raw</th><th class="c">FAR calibrated</th></tr></thead>
+        <tbody><tr><td class="c">12</td><td class="c">0.859</td><td class="c yes">0.930</td><td class="c">0.0066</td><td class="c">0.0426</td></tr><tr><td class="c">16</td><td class="c">0.982</td><td class="c yes">0.991</td><td class="c">0.0073</td><td class="c">0.0182</td></tr><tr><td class="c">20</td><td class="c">1.000</td><td class="c yes">1.000</td><td class="c">0.0102</td><td class="c">0.0102</td></tr><tr><td class="c">32</td><td class="c">1.000</td><td class="c yes">1.000</td><td class="c">0.0140</td><td class="c">0.0030</td></tr><tr><td class="c">64</td><td class="c">1.000</td><td class="c yes">1.000</td><td class="c">0.0104</td><td class="c">0.0004</td></tr><tr><td class="c">112</td><td class="c">1.000</td><td class="c yes">0.990</td><td class="c">0.0122</td><td class="c">0.0000</td></tr><tr><td class="c">all</td><td class="c">0.980</td><td class="c yes">0.989</td><td class="c">0.01</td><td class="c">0.01</td></tr></tbody>
+      </table></div>
+    </div>
+    <div class="cols">
+      <p>Calibration moves acceptance from large faces to small ones. At 12 pixels it accepts 93.0% of genuine pairs instead of 85.9%, at the cost of more false accepts there (4.3% against 0.7%). For faces of 32 pixels and more, false accepts drop almost to zero. Overall, TAR at 1% FAR rises from 0.980 to 0.989.</p>
+    </div>
+
+    <div class="wide">
+      <p class="tcap"><b>Table V</b> Ablation on our class photographs (10 photos, 804 labelled faces, 74 appearances of 10 enrolled students). T tiling, D degraded enrollment, C calibration, A one-to-one assignment; ArcFace ResNet-50. Attendance F1 with photo-bootstrap 95% interval; thresholds chosen leave-one-photo-out. "Unknown named" counts non-enrolled faces given an enrolled student's name. Source: <span class="mono">experiments/results/class_eval.json</span>, commit 7e35f53.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Configuration</th><th class="c">T</th><th class="c">D</th><th class="c">C</th><th class="c">A</th><th class="c">Attendance F1</th><th class="c">False present</th><th class="c">Missed</th><th class="c">Unknown named</th><th class="c">Enrolled named</th><th class="c">Edits / photo</th></tr></thead>
+        <tbody><tr><td>Baseline</td><td class="c no">–</td><td class="c no">–</td><td class="c no">–</td><td class="c no">–</td><td class="c">0.959 <span class="mono">[0.932, 0.986]</span></td><td class="c">3</td><td class="c">3</td><td class="c">21</td><td class="c">71/74</td><td class="c">0.6</td></tr><tr><td>+ T</td><td class="c yes">✓</td><td class="c no">–</td><td class="c no">–</td><td class="c no">–</td><td class="c">0.966 <span class="mono">[0.946, 0.987]</span></td><td class="c">3</td><td class="c">2</td><td class="c">10</td><td class="c">72/74</td><td class="c">0.5</td></tr><tr><td>+ T + D</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">–</td><td class="c no">–</td><td class="c">0.973 <span class="mono">[0.953, 0.993]</span></td><td class="c">2</td><td class="c">2</td><td class="c">6</td><td class="c">72/74</td><td class="c">0.4</td></tr><tr><td>+ T + D + A (deployed)</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">–</td><td class="c yes">✓</td><td class="c yes">0.973 <span class="mono">[0.953, 0.993]</span></td><td class="c">2</td><td class="c">2</td><td class="c">2</td><td class="c">72/74</td><td class="c">0.4</td></tr><tr><td>+ T + D + C</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">–</td><td class="c">0.966 <span class="mono">[0.936, 0.993]</span></td><td class="c">3</td><td class="c">2</td><td class="c">7</td><td class="c">72/74</td><td class="c">0.5</td></tr><tr><td>Full (T + D + C + A)</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c">0.966 <span class="mono">[0.936, 0.993]</span></td><td class="c">3</td><td class="c">2</td><td class="c">3</td><td class="c">72/74</td><td class="c">0.5</td></tr><tr><td>Full − T</td><td class="c no">–</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c">0.959 <span class="mono">[0.925, 0.988]</span></td><td class="c">3</td><td class="c">3</td><td class="c">4</td><td class="c">70/74</td><td class="c">0.6</td></tr><tr><td>Full − D</td><td class="c yes">✓</td><td class="c no">–</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c">0.953 <span class="mono">[0.919, 0.982]</span></td><td class="c">4</td><td class="c">3</td><td class="c">4</td><td class="c">71/74</td><td class="c">0.7</td></tr><tr><td>Full − A</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">–</td><td class="c">0.966 <span class="mono">[0.936, 0.993]</span></td><td class="c">3</td><td class="c">2</td><td class="c">7</td><td class="c">72/74</td><td class="c">0.5</td></tr></tbody>
+      </table></div>
+    </div>
+
+    <div class="wide">
+      <p class="tcap"><b>Table VI</b> Embedder comparison on the class photographs, all with T + D + A.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Embedder</th><th class="c">Attendance F1</th><th class="c">False present</th><th class="c">Missed</th><th class="c">Unknown named</th><th class="c">Enrolled named</th></tr></thead>
+        <tbody><tr><td>ArcFace ResNet-50</td><td class="c">0.973 <span class="mono">[0.953, 0.993]</span></td><td class="c">2</td><td class="c">2</td><td class="c">2</td><td class="c">72/74</td></tr><tr><td>ArcFace MobileFaceNet</td><td class="c">0.932 <span class="mono">[0.897, 0.968]</span></td><td class="c">5</td><td class="c">5</td><td class="c">6</td><td class="c">68/74</td></tr><tr><td>SFace</td><td class="c">0.884 <span class="mono">[0.837, 0.921]</span></td><td class="c">8</td><td class="c">9</td><td class="c">15</td><td class="c">58/74</td></tr><tr><td>LBP histograms</td><td class="c">0.851 <span class="mono">[0.765, 0.925]</span></td><td class="c">26</td><td class="c">0</td><td class="c">90</td><td class="c">1/74</td></tr></tbody>
+      </table></div>
+    </div>
+    <div class="cols">
+      <p>The pretrained ArcFace ResNet-50 alone already produces a good attendance list (F1 0.959), so attendance-level differences between configurations are small and their intervals overlap. Face-level errors show the effect of the decision layer more clearly. Without it, 21 faces of non-enrolled people were given an enrolled student's name. Tiling halves this to 10, degraded enrollment brings it to 6, and one-to-one assignment to 2, a tenfold reduction. Most of these errors leave the attendance list unchanged, because the named student is also present elsewhere in the photo, but each one is a wrong name the teacher sees on the review screen.</p>
+      <p>Calibration did not help on our photographs (F1 0.966 with C against 0.973 without). It was designed for faces of 12 to 20 pixels, where it helps on LFW (Table IV-b). Our class faces are mostly 50 to 130 pixels tall, where it only makes acceptance stricter. The deployed system therefore uses T + D + A without C. On the class photos the deep embedders rank as on TinyFace rank-1. LBP is unusable: at its best threshold it names 90 unknown faces and only 1 of 74 enrolled appearances correctly.</p>
+    </div>
+  </section>
+
+  <section id="system">
+    <h2><span class="num">VI.</span> System Implementation <span class="chip done">built</span></h2>
+    <div class="cols">
+      <p>The recognition engine is a typed Python package with no user-interface code. The web application is a thin Django layer over it, which supplies authentication, roles, forms and the database. Students sign up, join a course with its code and register their face through four guided photos: facing the camera, turned to each side, and in different light. Each photo is checked automatically. The checks require exactly one face that is large enough, sharp enough (variance of the Laplacian) and evenly lit, and a head turn estimated from the five landmarks that matches the requested pose. A rejected photo gets a specific instruction for retaking it.</p>
+      <p>Teachers create courses (subject, year, semester), upload a class photo with the date and topic, and review every detected face next to the proposed name, with the faces drawn on the photo. They correct the pre-ticked register and confirm. Confirmed attendance then appears on both the student and teacher dashboards.</p>
+      <p>The system runs on one laptop (Apple M2, CPU-only inference) for demonstration and is not published online. A class of about 60 students needs no vector database, since comparing a face against every enrolled embedding takes microseconds with a matrix product. Embeddings are stored in SQLite.</p>
+      <p>Data minimisation is part of the design. Enrollment photos are converted to embeddings in memory and discarded. A class photo is kept only until the teacher confirms the list, then deleted. A student can delete their stored embeddings at any time.</p>
+    </div>
+  </section>
+
+  <section id="ethics">
+    <h2><span class="num">VII.</span> Ethics and Licensing <span class="chip wip">drafted</span></h2>
+    <div class="cols">
+      <p>Face embeddings are biometric data even though they are not images, because they can be compared against any new photograph. Our enrolled participants are classmates who gave the authors permission to use their photos. Other people visible in class photographs are processed only on the authors' machine. Their faces are not stored, not labelled with identities and blurred in every figure we publish. The raw class dataset is never committed to version control.</p>
+      <p>The InsightFace library is MIT-licensed, but its pretrained models are released for non-commercial research only. SFace is Apache-2.0. We deliberately avoid MS-Celeb-1M and MegaFace, which their creators withdrew over consent concerns. QuickPic proposes a draft that a teacher must confirm, and is not meant to take attendance automatically.</p>
+    </div>
+  </section>
+
+  <section id="timeline">
+    <h2><span class="num">VIII.</span> Timeline and Progress <span class="chip wip">live</span></h2>
+    <div class="wide">
+      <p class="tcap"><b>Table VI</b> Schedule to the project show on 31 October 2026</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Date</th><th>Milestone</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">Thu 22 Oct</td><td>Scope, approach and stack chosen; datasets and licences checked; repository set up</td><td><span class="chip done">done</span></td></tr>
+            <tr><td class="mono">22–23 Oct</td><td>Engine, tiling, labelling tool, matcher, metrics, components A and D, ICFD check</td><td><span class="chip done">done</span></td></tr>
+            <tr><td class="mono">22–26 Oct</td><td>LFW and TinyFace benchmarks on Colab (Table IV)</td><td><span class="chip done">done</span></td></tr>
+            <tr><td class="mono">26 Oct</td><td>Class photos collected and labelled (804 faces)</td><td><span class="chip done">done</span></td></tr>
+            <tr><td class="mono">27 Oct</td><td>Full pipeline, class ablation, calibration (C), detection recall; web app built</td><td><span class="chip done">done</span></td></tr>
+            <tr><td class="mono">28 Oct</td><td>Web app tested end to end with class data; demo setup</td><td><span class="chip wip">next</span></td></tr>
+            <tr><td class="mono">29 Oct</td><td>IEEE paper (LaTeX) full draft; README; GitHub</td><td><span class="chip plan">planned</span></td></tr>
+            <tr><td class="mono">30 Oct</td><td>Slides, demo rehearsal, study pack</td><td><span class="chip plan">planned</span></td></tr>
+            <tr><td class="mono">Sat 31 Oct</td><td>Project show</td><td><span class="chip plan">planned</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h3>Progress log</h3>
+    <ul class="log">
+      <li><span class="when">v0.1 · 22 Oct</span><p>Problem framed as open-set identification from one class photograph. Chose frozen pretrained networks with our own classroom-aware decision layer (approach C) over fine-tuning, which would need restricted training data and GPU time without a likely gain. Checked dataset and model licences. Hosting moved from a cloud free tier to the authors' laptop with a public tunnel, since the free tiers we checked either require a paid plan or provide too little CPU for detection on large photos. Web stack: Django with SQLite. Repository created with a locked Python 3.12 environment, lint and test tooling, CI, and a guard that fails the build if any image is committed. Pretrained weights (InsightFace buffalo_l and buffalo_s, YuNet, SFace) are fetched by a script and never committed. InsightFace 2.1 detects at 128 and 640 pixels by default, so the baseline fixes a single 640×640 pass to keep the tiling ablation clean.</p></li>
+      <li><span class="when">v0.2 · 22 Oct</span><p>Searched for Indian classroom face data. Added the IIT Madras ICFD sample (10 subjects, classroom probes with a median height of 60 px) as an in-domain test set. We looked at fine-tuning the recognition network on Indian faces and recommend against it (decision open). The largest Indian sets have about 100 identities, while the pretrained model learned from hundreds of thousands, and its published accuracy on South Asian faces (93.2%) is already close to its accuracy on Caucasian faces (94.7%).</p></li>
+      <li><span class="when">v0.3 · 22 Oct</span><p>Engine implemented behind common interfaces: four detectors (SCRFD-10GF, SCRFD-500MF, YuNet, Haar) and four embedders (ArcFace ResNet-50, ArcFace MobileFaceNet, SFace, LBP), least-squares similarity alignment to the ArcFace template, and quality measures (sharpness, brightness, landmark yaw). In a sanity check on InsightFace's public sample photo, the three CNN detectors found all 6 faces. The Haar cascade returned 5 boxes, of which only 3 are faces (corrected in v0.4). For ArcFace ResNet-50, the same face aligned from two detectors' landmarks scored 0.75 to 0.98 cosine similarity, while different people scored at most 0.21. LBP similarities all sit near 0.95, so it needs its own threshold. SCRFD finds nothing in tightly cropped faces such as the ICFD gallery images, so those are padded before detection. OpenCV is pinned to 4.x because version 5 moved the Haar cascade out of the core package.</p></li>
+      <li><span class="when">v0.4 · 22 Oct</span><p>Implemented tiled detection (component T) with edge-aware merging, which drops boxes cut by an inner tile edge, followed by non-maximum suppression. Ran the first saved experiment (Table III-a). Built the local labelling tool for class photos. Correction: Haar finds 3 of the 6 sample faces with 2 false alarms, not 5 of 6. Switched the Haar baseline from global histogram equalisation to CLAHE, after global equalisation was shown to fail on images with large uniform regions.</p></li>
+      <li><span class="when">v0.5 · 22 Oct</span><p>Implemented the baseline matcher, evaluation metrics (TAR@FAR, LFW 10-fold accuracy, DIR@FAR, attendance precision, recall and false-present count), one-to-one assignment (component A, Hungarian method) and degradation-aware enrollment (component D, ten fixed degradations). Ran the ICFD sample check (Table III-b). Prepared the Colab notebook for LFW and TinyFace (Table IV). For TinyFace, padding faces to a square instead of stretching them made no difference on the training split (rank-1 0.410 against 0.407 with MobileFaceNet), so padding is kept.</p></li>
+      <li><span class="when">v0.6 · 27 Oct</span><p>Public benchmarks finished on Colab (Table IV). SFace was moved from OpenCV to onnxruntime so it can use the GPU, with outputs checked to match within 10<sup>−5</sup>. Ten class photographs (804 faces) were labelled. The full pipeline and the leave-one-photo-out class evaluation were run (Tables III, V, VI). Calibration was fitted on degraded LFW pairs (Table IV-b); it helps for tiny faces but not at classroom face sizes, so the deployed system uses T + D + A. The project is demonstrated offline on one laptop, so the hosting plan was dropped, and so was the WIDER FACE comparison. The Django web app was built: guided registration with automatic photo checks, courses, review and confirmation, and dashboards.</p></li>
+    </ul>
+  </section>
+
+  <section id="refs">
+    <h2>References</h2>
+    <ol class="refs cols">
+      <li><span class="rn">[1]</span><span>P. Viola and M. Jones, “Rapid object detection using a boosted cascade of simple features,” in <i>Proc. IEEE CVPR</i>, 2001.</span></li>
+      <li><span class="rn">[2]</span><span>S. Yang, P. Luo, C. C. Loy, and X. Tang, “WIDER FACE: A face detection benchmark,” in <i>Proc. IEEE CVPR</i>, 2016.</span></li>
+      <li><span class="rn">[3]</span><span>J. Guo, J. Deng, A. Lattas, and S. Zafeiriou, “Sample and computation redistribution for efficient face detection,” in <i>Proc. ICLR</i>, 2022.</span></li>
+      <li><span class="rn">[4]</span><span>W. Wu, H. Peng, and S. Yu, “YuNet: A tiny millisecond-level face detector,” <i>Machine Intelligence Research</i>, vol. 20, 2023.</span></li>
+      <li><span class="rn">[5]</span><span>T. Ahonen, A. Hadid, and M. Pietikäinen, “Face description with local binary patterns: Application to face recognition,” <i>IEEE Trans. PAMI</i>, vol. 28, no. 12, 2006.</span></li>
+      <li><span class="rn">[6]</span><span>J. Deng, J. Guo, N. Xue, and S. Zafeiriou, “ArcFace: Additive angular margin loss for deep face recognition,” in <i>Proc. IEEE CVPR</i>, 2019.</span></li>
+      <li><span class="rn">[7]</span><span>Y. Zhong, W. Deng, J. Hu, D. Zhao, X. Li, and D. Wen, “SFace: Sigmoid-constrained hypersphere loss for robust face recognition,” <i>IEEE Trans. Image Process.</i>, vol. 30, 2021.</span></li>
+      <li><span class="rn">[8]</span><span>S. Chen, Y. Liu, X. Gao, and Z. Han, “MobileFaceNets: Efficient CNNs for accurate real-time face verification on mobile devices,” in <i>Proc. CCBR</i>, 2018.</span></li>
+      <li><span class="rn">[9]</span><span>Z. Zhu <i>et al.</i>, “WebFace260M: A benchmark unveiling the power of million-scale deep face recognition,” in <i>Proc. IEEE CVPR</i>, 2021.</span></li>
+      <li><span class="rn">[10]</span><span>G. B. Huang, M. Ramesh, T. Berg, and E. Learned-Miller, “Labeled Faces in the Wild: A database for studying face recognition in unconstrained environments,” Univ. Massachusetts, Amherst, Tech. Rep. 07-49, 2007.</span></li>
+      <li><span class="rn">[11]</span><span>Z. Cheng, X. Zhu, and S. Gong, “Low-resolution face recognition,” in <i>Proc. ACCV</i>, 2018.</span></li>
+      <li><span class="rn">[12]</span><span>Q. Meng, S. Zhao, Z. Huang, and F. Zhou, “MagFace: A universal representation for face recognition and quality assessment,” in <i>Proc. IEEE CVPR</i>, 2021.</span></li>
+      <li><span class="rn">[13]</span><span>P. Terhörst <i>et al.</i>, “QMagFace: Simple and accurate quality-aware face recognition,” in <i>Proc. IEEE WACV</i>, 2023.</span></li>
+      <li><span class="rn">[14]</span><span>A. C. Gallagher and T. Chen, “Understanding images of groups of people,” in <i>Proc. IEEE CVPR</i>, 2009.</span></li>
+      <li><span class="rn">[15]</span><span>W. J. Scheirer, A. de Rezende Rocha, A. Sapkota, and T. E. Boult, “Toward open set recognition,” <i>IEEE Trans. PAMI</i>, vol. 35, no. 7, 2013.</span></li>
+      <li><span class="rn">[16]</span><span>M. Günther, S. Cruz, E. M. Rudd, and T. E. Boult, “Toward open-set face recognition,” in <i>Proc. IEEE CVPR Workshops</i>, 2017.</span></li>
+      <li><span class="rn">[17]</span><span>H. W. Kuhn, “The Hungarian method for the assignment problem,” <i>Naval Research Logistics Quarterly</i>, vol. 2, 1955.</span></li>
+      <li><span class="rn">[18]</span><span>P. Grother, M. Ngan, and K. Hanaoka, “Face Recognition Vendor Test (FRVT) Part 2: Identification,” NIST IR 8271, 2019.</span></li>
+      <li><span class="rn">[19]</span><span>J. L. Pech-Pacheco, G. Cristóbal, J. Chamorro-Martínez, and J. Fernández-Valdivia, “Diatom autofocusing in brightfield microscopy: A comparative study,” in <i>Proc. ICPR</i>, 2000.</span></li>
+      <li><span class="rn">[20]</span><span>F. C. Akyon, S. O. Altinuc, and A. Temizel, “Slicing aided hyper inference and fine-tuning for small object detection,” in <i>Proc. IEEE ICIP</i>, 2022.</span></li>
+      <li><span class="rn">[21]</span><span>A. Bhattacharjee and S. Das, “D2SC-GAN: Dual deep-shallow channeled generative adversarial network, for resolving low-resolution faces for recognition in classroom scenarios,” <i>IEEE Trans. Biometrics, Behavior, and Identity Science</i>, vol. 2, no. 3, pp. 223–234, 2020.</span></li>
+      <li><span class="rn">[22]</span><span>D. Mery, I. Mackenney, and E. Villalobos, “Student attendance system in crowded classrooms using a smartphone camera,” in <i>Proc. IEEE WACV</i>, 2019, pp. 857–866.</span></li>
+    </ol>
+  </section>
+</main>
+
