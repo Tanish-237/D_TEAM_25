@@ -179,7 +179,9 @@ export interface PhotoCheck {
 // ---------------------------------------------------------------- formatting
 
 export function formatDate(iso: string, style: "short" | "long" = "short"): string {
-  return new Date(`${iso.slice(0, 10)}T00:00:00`).toLocaleDateString("en-IN", {
+  // Plain dates are local calendar days; timestamps are converted to local time.
+  const date = iso.length > 10 ? new Date(iso) : new Date(`${iso}T00:00:00`);
+  return date.toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short",
     ...(style === "long" ? { year: "numeric", weekday: "short" } : {}),

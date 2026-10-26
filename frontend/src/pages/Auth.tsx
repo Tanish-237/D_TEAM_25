@@ -1,5 +1,5 @@
 import { GraduationCap, Presentation } from "lucide-react";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Logo, ThemeToggle } from "../components/Layout";
@@ -92,7 +92,10 @@ export function Signup() {
   const [role, setRole] = useState<Role>("student");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  if (user) return <Navigate to={homeFor(user)} replace />;
+  // Set once this form signs the user up, so the redirect below does not override
+  // the navigation to face registration.
+  const signedUp = useRef(false);
+  if (user && !signedUp.current) return <Navigate to={homeFor(user)} replace />;
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -101,6 +104,7 @@ export function Signup() {
     setError(null);
     try {
       const { user } = await api<{ user: User }>("/auth/signup", { json: form });
+      signedUp.current = true;
       setUser(user);
       toast.success("Account created");
       navigate(user.role === "student" ? "/student/face" : "/teacher");

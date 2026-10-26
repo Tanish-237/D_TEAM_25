@@ -49,6 +49,12 @@ class AuthTests(ApiTestCase):
         response = self.post("/auth/signup", {"username": "new", "password": "long-enough-1"})
         self.assertEqual(response.status_code, 400)
 
+    def test_signup_student(self):
+        data = {"username": "Asha", "password": "long-enough-1", "roll_no": "20239999"}
+        user = self.post("/auth/signup", data).json()["user"]
+        self.assertEqual((user["username"], user["role"]), ("asha", "student"))
+        self.assertEqual(self.client.get("/api/auth/me").json()["user"]["roll_no"], "20239999")
+
     def test_signup_teacher_needs_correct_code(self):
         data = {"username": "t2", "password": "long-enough-1", "teacher_code": "wrong"}
         self.assertEqual(self.post("/auth/signup", data).status_code, 400)
