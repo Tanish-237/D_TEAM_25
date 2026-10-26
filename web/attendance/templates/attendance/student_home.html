@@ -1,0 +1,53 @@
+{% extends "attendance/base.html" %}
+{% block title %}My attendance{% endblock %}
+{% block content %}
+<div>
+  <h1>My attendance</h1>
+  <p class="sub">Roll number {{ user.roll_no }}</p>
+</div>
+
+<div class="grid-2">
+  <section class="panel">
+    <h2>Face registration</h2>
+    {% if face_data %}
+      <p><span class="chip good">Registered</span> from {{ face_data.photos_used }} photos on {{ face_data.updated|date:"j M Y" }}.</p>
+      <p class="sub">Only face embeddings are stored, never your photos.</p>
+      <p style="display:flex;gap:8px;flex-wrap:wrap">
+        <a class="button secondary" href="{% url 'register_face' %}">Register again</a>
+        <form method="post" action="{% url 'delete_face' %}">{% csrf_token %}<button class="danger">Delete my face data</button></form>
+      </p>
+    {% else %}
+      <p><span class="chip wait">Not registered</span> Your teacher's class photo cannot mark you present yet.</p>
+      <a class="button" href="{% url 'register_face' %}">Register my face</a>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>Join a course</h2>
+    <form method="post" action="{% url 'join' %}">{% csrf_token %}
+      {{ join_form.as_p }}
+      <button>Join</button>
+    </form>
+  </section>
+</div>
+
+{% for c in courses %}
+<section class="panel">
+  <h2>{{ c.course.subject }} <span class="sub">· year {{ c.course.year }}, semester {{ c.course.semester }}</span></h2>
+  {% if c.total %}
+    <p><span class="stat">{{ c.percent }}%</span> <span class="sub">present in {{ c.present }} of {{ c.total }} sessions</span></p>
+    <div class="scroll"><table>
+      <thead><tr><th>Date</th><th>Topic</th><th>Status</th></tr></thead>
+      <tbody>{% for r in c.records %}
+        <tr><td>{{ r.session.date|date:"D j M Y" }}</td><td>{{ r.session.topic }}</td>
+          <td>{% if r.present %}<span class="chip good">Present</span>{% else %}<span class="chip bad">Absent</span>{% endif %}</td></tr>
+      {% endfor %}</tbody>
+    </table></div>
+  {% else %}
+    <p class="sub">No confirmed sessions yet.</p>
+  {% endif %}
+</section>
+{% empty %}
+<section class="panel"><p class="sub">You have not joined a course yet. Ask your teacher for the course code.</p></section>
+{% endfor %}
+{% endblock %}

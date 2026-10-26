@@ -1,0 +1,30 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}QuickPic{% endblock %} · QuickPic</title>
+  <link rel="stylesheet" href="{% static 'attendance/style.css' %}">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="{% url 'home' %}">Quick<span>Pic</span></a>
+    <span class="sub">Attendance from one class photo</span>
+    <nav>
+      {% if user.is_authenticated %}
+        <span>{{ user.get_full_name|default:user.username }} · {{ user.get_role_display }}</span>
+        <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="secondary">Log out</button></form>
+      {% else %}
+        <a href="{% url 'login' %}">Log in</a>
+        <a href="{% url 'signup' %}">Sign up</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main>
+    {% if messages %}
+      <ul class="messages">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

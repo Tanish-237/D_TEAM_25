@@ -1,0 +1,29 @@
+{% extends "attendance/base.html" %}
+{% block title %}My courses{% endblock %}
+{% block content %}
+<div>
+  <h1>My courses</h1>
+  <p class="sub">Students join a course with its code, then register their face.</p>
+</div>
+<div class="grid-2">
+  <section class="panel">
+    <h2>Courses</h2>
+    {% if courses %}
+    <div class="scroll"><table>
+      <thead><tr><th>Subject</th><th>Year / sem</th><th>Code</th><th>Students</th><th>Sessions</th></tr></thead>
+      <tbody>{% for c in courses %}
+        <tr><td><a href="{% url 'course' c.pk %}">{{ c.subject }}</a></td><td>{{ c.year }} / {{ c.semester }}</td>
+          <td class="code">{{ c.code }}</td><td>{{ c.enrolled }}</td><td>{{ c.sessions_count }}</td></tr>
+      {% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="sub">No courses yet. Create one to get a join code.</p>{% endif %}
+  </section>
+  <section class="panel">
+    <h2>Create a course</h2>
+    <form method="post" action="{% url 'create_course' %}">{% csrf_token %}
+      {{ form.as_p }}
+      <button>Create course</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

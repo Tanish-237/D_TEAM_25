@@ -1,0 +1,13 @@
+{% extends "attendance/base.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<section class="panel" style="max-width:420px">
+  <h1>Log in</h1>
+  <p class="sub">Students and teachers use the same login.</p>
+  <form method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <button>Log in</button>
+  </form>
+  <p class="sub">New here? <a href="{% url 'signup' %}">Create an account</a>.</p>
+</section>
+{% endblock %}

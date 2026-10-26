@@ -1,0 +1,56 @@
+{% extends "attendance/base.html" %}
+{% block title %}Review {{ session }}{% endblock %}
+{% block content %}
+<div>
+  <h1>Review attendance</h1>
+  <p class="sub">{{ session.course.subject }} · {{ session.date|date:"D j M Y" }} {{ session.topic }} ·
+    {{ faces|length }} faces found in {{ session.seconds|floatformat:1 }} s · {{ named }} recognised · {{ unknown }} unknown</p>
+</div>
+<form method="post" class="review">{% csrf_token %}
+  <div style="display:grid;gap:20px;min-width:0">
+    <section class="panel">
+      <div class="photo">
+        <img src="{% url 'session_photo' session.pk %}" alt="Class photo" id="photo">
+        <svg id="boxes" preserveAspectRatio="none"></svg>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>Faces</h2>
+      <p class="sub">Green faces were matched to a student. Click a face to find it in the photo.</p>
+      <div class="faces">
+        {% for f in faces %}
+          <div class="face {% if f.proposed %}named{% endif %}" data-index="{{ f.index }}" data-box="{{ f.box|join:',' }}" data-named="{% if f.proposed %}1{% endif %}">
+            <img src="{% url 'face_crop' session.pk f.index %}" alt="Face {{ f.index|add:1 }}" loading="lazy">
+            <span class="who">{% if f.proposed %}{{ f.proposed.get_full_name|default:f.proposed.username }}{% else %}unknown{% endif %}</span>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+  <section class="panel roster sticky">
+    <h2>Present</h2>
+    <p class="sub">Ticked from the photo. Correct anything before confirming.</p>
+    {% for r in roster %}
+      <label><input type="checkbox" name="present" value="{{ r.student.pk }}" {% if r.proposed %}checked{% endif %}> {{ r.student }}</label>
+    {% empty %}<p class="sub">No students have joined this course.</p>{% endfor %}
+    <p style="margin-top:14px"><button>Confirm attendance</button></p>
+    <span class="help">Confirming saves the register and deletes the photo and face crops.</span>
+  </section>
+</form>
+<script>
+  const img = document.getElementById("photo"), svg = document.getElementById("boxes");
+  function draw() {
+    svg.setAttribute("viewBox", `0 0 ${img.naturalWidth} ${img.naturalHeight}`);
+    svg.innerHTML = [...document.querySelectorAll(".face")].map((el) => {
+      const [x1, y1, x2, y2] = el.dataset.box.split(",").map(Number);
+      return `<rect data-index="${el.dataset.index}" class="${el.dataset.named ? "named" : "unknown"}" x="${x1}" y="${y1}" width="${x2 - x1}" height="${y2 - y1}"></rect>`;
+    }).join("");
+  }
+  img.complete ? draw() : img.addEventListener("load", draw);
+  document.querySelectorAll(".face").forEach((el) => el.addEventListener("click", () => {
+    svg.querySelectorAll("rect.active").forEach((r) => r.classList.remove("active"));
+    svg.querySelector(`rect[data-index="${el.dataset.index}"]`)?.classList.add("active");
+    img.scrollIntoView({ behavior: "smooth", block: "center" });
+  }));
+</script>
+{% endblock %}

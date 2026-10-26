@@ -1,0 +1,40 @@
+{% extends "attendance/base.html" %}
+{% block title %}Register your face{% endblock %}
+{% block content %}
+<div>
+  <h1>Register your face</h1>
+  <p class="sub">Four photos, one per step. Each photo is checked automatically and then discarded; only face embeddings are kept.</p>
+</div>
+<form method="post" enctype="multipart/form-data" class="panel">{% csrf_token %}
+  <div class="steps">
+    {% for field in form %}
+      <div class="step {% for c in checks %}{% if c.step.key == field.name %}{% if c.ok %}ok{% else %}fail{% endif %}{% endif %}{% endfor %}">
+        <svg viewBox="0 0 72 72" aria-hidden="true">
+          <circle cx="36" cy="36" r="34" fill="none" stroke="currentColor" stroke-width="2" opacity=".3"/>
+          {% if field.name == "left" %}
+            <ellipse cx="32" cy="36" rx="17" ry="22" fill="none" stroke="currentColor" stroke-width="2.5"/>
+            <path d="M18 36 l-6 3 l6 3" fill="none" stroke="currentColor" stroke-width="2.5"/>
+          {% elif field.name == "right" %}
+            <ellipse cx="40" cy="36" rx="17" ry="22" fill="none" stroke="currentColor" stroke-width="2.5"/>
+            <path d="M54 36 l6 3 l-6 3" fill="none" stroke="currentColor" stroke-width="2.5"/>
+          {% elif field.name == "light" %}
+            <ellipse cx="36" cy="38" rx="17" ry="22" fill="none" stroke="currentColor" stroke-width="2.5"/>
+            <circle cx="58" cy="14" r="6" fill="currentColor"/>
+          {% else %}
+            <ellipse cx="36" cy="36" rx="18" ry="23" fill="none" stroke="currentColor" stroke-width="2.5"/>
+            <circle cx="29" cy="32" r="2" fill="currentColor"/><circle cx="43" cy="32" r="2" fill="currentColor"/>
+          {% endif %}
+        </svg>
+        <strong>{{ forloop.counter }}. {{ field.label }}</strong>
+        <span class="help">{{ field.help_text }}</span>
+        <input type="file" name="{{ field.name }}" accept="image/*" required>
+        {% for c in checks %}{% if c.step.key == field.name %}
+          <span class="chip {% if c.ok %}good{% else %}bad{% endif %}">{{ c.message }}</span>
+        {% endif %}{% endfor %}
+        {{ field.errors }}
+      </div>
+    {% endfor %}
+  </div>
+  <p style="margin-top:16px"><button>Check and register</button> <a class="button secondary" href="{% url 'home' %}">Cancel</a></p>
+</form>
+{% endblock %}
