@@ -91,6 +91,3 @@ class QuickPic:
             scores = self.calibrator.probability(scores, heights, sharp)
         decide = assign_one_to_one if self.config.one_to_one else decide_independently
         return Result(faces, scores, decide(scores, threshold), gallery.ids)
-
-    def recognise(self, photo: np.ndarray, gallery: Gallery) -> Result:
-        return self.decide(self.detect(photo), gallery, self.config.threshold)

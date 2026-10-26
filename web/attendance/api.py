@@ -221,12 +221,6 @@ def join_course(request, data: JoinIn):
     return as_course(course)
 
 
-@student_router.post("/courses/{course_id}/leave")
-def leave_course(request, course_id: int):
-    get_object_or_404(Course, pk=course_id).students.remove(request.user)
-    return {"ok": True}
-
-
 @student_router.get("/face/steps")
 def face_steps(request):
     return [
@@ -525,18 +519,6 @@ def delete_session(request, session_id: int):
         session.photo.delete(save=False)
     session.delete()
     return {"ok": True}
-
-
-@api.get("/stats", auth=None)
-def stats(request):
-    """Headline numbers for the landing page, from experiments/results (see the report)."""
-    return {
-        "f1": 0.973,
-        "faces_labelled": 804,
-        "detection_recall": 0.971,
-        "unknown_named": [21, 2],
-        "seconds_per_photo": 6.3,
-    }
 
 
 api.add_router("/auth", auth_router)

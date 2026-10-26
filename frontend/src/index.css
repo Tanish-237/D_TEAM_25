@@ -100,8 +100,7 @@ h1, h2, h3 {
 .brackets {
   position: relative;
 }
-.brackets::before,
-.brackets::after {
+.brackets::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -117,9 +116,6 @@ h1, h2, h3 {
     linear-gradient(#000 0 0) top right / 14px 14px no-repeat,
     linear-gradient(#000 0 0) bottom left / 14px 14px no-repeat,
     linear-gradient(#000 0 0) bottom right / 14px 14px no-repeat;
-}
-.brackets::after {
-  display: none;
 }
 
 dialog::backdrop {
