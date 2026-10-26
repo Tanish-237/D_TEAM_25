@@ -1,0 +1,132 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Paper, ink and one signal colour: the green of a detection box that found a student. */
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", monospace;
+
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-signal: var(--signal);
+  --color-signal-soft: var(--signal-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --animate-rise: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-scan: scan 2.4s ease-in-out infinite;
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes scan {
+    0%, 100% { transform: translateY(-100%); }
+    50% { transform: translateY(100%); }
+  }
+}
+
+:root {
+  --paper: #f7f6f3;
+  --surface: #ffffff;
+  --sunken: #efeee9;
+  --ink: #18181b;
+  --muted: #5d5d66;
+  --faint: #9a9aa3;
+  --line: #e3e1db;
+  --signal: #15803d;
+  --signal-soft: #dcfce7;
+  --warn: #b45309;
+  --warn-soft: #fef3c7;
+  --danger: #b91c1c;
+  --danger-soft: #fee2e2;
+  color-scheme: light;
+}
+
+.dark {
+  --paper: #0e0e10;
+  --surface: #17171a;
+  --sunken: #0a0a0b;
+  --ink: #f4f4f5;
+  --muted: #a1a1aa;
+  --faint: #6b6b74;
+  --line: #2a2a2f;
+  --signal: #4ade80;
+  --signal-soft: #14532d66;
+  --warn: #fbbf24;
+  --warn-soft: #78350f55;
+  --danger: #f87171;
+  --danger-soft: #7f1d1d55;
+  color-scheme: dark;
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  text-wrap: balance;
+  letter-spacing: -0.02em;
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Viewfinder corners, the app's signature: four L-shaped brackets around an element. */
+.brackets {
+  position: relative;
+}
+.brackets::before,
+.brackets::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 2px solid currentColor;
+  -webkit-mask:
+    linear-gradient(#000 0 0) top left / 14px 14px no-repeat,
+    linear-gradient(#000 0 0) top right / 14px 14px no-repeat,
+    linear-gradient(#000 0 0) bottom left / 14px 14px no-repeat,
+    linear-gradient(#000 0 0) bottom right / 14px 14px no-repeat;
+  mask:
+    linear-gradient(#000 0 0) top left / 14px 14px no-repeat,
+    linear-gradient(#000 0 0) top right / 14px 14px no-repeat,
+    linear-gradient(#000 0 0) bottom left / 14px 14px no-repeat,
+    linear-gradient(#000 0 0) bottom right / 14px 14px no-repeat;
+}
+.brackets::after {
+  display: none;
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.45);
+  backdrop-filter: blur(2px);
+}
+
+::selection {
+  background: var(--signal-soft);
+}

@@ -22,6 +22,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -50,7 +51,7 @@ TEMPLATES = [
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "quickpic.sqlite3",
+        "NAME": os.environ.get("QUICKPIC_DB", BASE_DIR / "quickpic.sqlite3"),
     }
 }
 
@@ -59,19 +60,21 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
 ]
-LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "home"
-LOGOUT_REDIRECT_URL = "login"
 
 LANGUAGE_CODE = "en-gb"
 TIME_ZONE = "Asia/Kolkata"
 USE_I18N = False
 USE_TZ = True
 
+# The React app (frontend/) is built into frontend/dist and served from here.
+FRONTEND_DIST = REPO_DIR / "frontend" / "dist"
 STATIC_URL = "static/"
-MEDIA_ROOT = BASE_DIR / "media"
+STATICFILES_DIRS = [FRONTEND_DIST] if FRONTEND_DIST.exists() else []
+WHITENOISE_USE_FINDERS = True
+CSRF_COOKIE_NAME = "csrftoken"
+MEDIA_ROOT = Path(os.environ.get("QUICKPIC_MEDIA", BASE_DIR / "media"))
 MEDIA_URL = "media/"
-DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024
+DATA_UPLOAD_MAX_MEMORY_SIZE = 40 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

@@ -1,13 +1,15 @@
-.PHONY: setup models test lint format check guard bundle web demo
+.PHONY: setup models test lint format check guard bundle build web dev api demo
 
 setup:
 	uv sync
+	cd frontend && pnpm install
 
 models:
 	./scripts/download_models.sh
 
 test:
 	uv run pytest
+	cd web && uv run python manage.py test attendance
 
 lint:
 	uv run ruff check .
@@ -29,7 +31,18 @@ bundle:
 	cd dist && zip -q quickpic-src.zip COMMIT && rm COMMIT
 	@echo "Upload dist/quickpic-src.zip to Google Drive: MyDrive/QuickPic/"
 
-web:
+build:
+	cd frontend && pnpm install --frozen-lockfile && pnpm build
+
+# The full app on http://127.0.0.1:8000 (built frontend served by Django).
+web: build
+	cd web && uv run python manage.py migrate --verbosity 0 && uv run python manage.py runserver
+
+# Live-reloading frontend on http://127.0.0.1:5173; run `make api` in another terminal.
+dev:
+	cd frontend && pnpm dev
+
+api:
 	cd web && uv run python manage.py migrate --verbosity 0 && uv run python manage.py runserver
 
 demo:

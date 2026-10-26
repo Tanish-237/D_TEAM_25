@@ -10,6 +10,7 @@ from functools import cache
 import cv2
 import numpy as np
 from django.conf import settings
+from django.core.files.base import ContentFile
 from django.db import transaction
 
 from attendance.models import Attendance, ClassSession, DetectedFace, FaceData, User
@@ -122,6 +123,7 @@ def process_session(session: ClassSession) -> None:
     engine = system()
     start = time.perf_counter()
     image = load_image(session.photo.path)
+    store_upright_jpeg(session, image)
     students = list(session.course.students.filter(face_data__isnull=False))
     gallery_dict = {s.pk: s.face_data.array() for s in students}
     faces = engine.detect(image)
@@ -148,6 +150,14 @@ def process_session(session: ClassSession) -> None:
         )
     session.seconds = time.perf_counter() - start
     session.save(update_fields=["seconds"])
+
+
+def store_upright_jpeg(session: ClassSession, image: np.ndarray) -> None:
+    """Replaces the upload (maybe HEIC or rotated by EXIF) with an upright JPEG for the browser."""
+    jpeg = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 88])[1].tobytes()
+    session.photo.delete(save=False)
+    session.photo.save(f"session-{session.pk}.jpg", ContentFile(jpeg), save=False)
+    session.save(update_fields=["photo"])
 
 
 def reading_order(faces) -> list[int]:

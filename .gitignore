@@ -28,3 +28,5 @@ paper/*.out
 paper/*.bbl
 paper/*.blg
 COMMIT
+frontend/node_modules/
+frontend/dist/
