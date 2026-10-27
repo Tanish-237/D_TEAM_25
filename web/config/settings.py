@@ -83,4 +83,4 @@ TEACHER_SIGNUP_CODE = os.environ.get("QUICKPIC_TEACHER_CODE", "ipcv-2026")
 
 # Recognition settings, from the class-photo evaluation (experiments/results/class_eval.json).
 QUICKPIC_CALIBRATOR = None
-QUICKPIC_THRESHOLD = 0.36
+QUICKPIC_THRESHOLD = 0.35

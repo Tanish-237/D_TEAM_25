@@ -248,9 +248,9 @@ export default function Landing() {
       <section id="results" className="border-y border-line bg-surface">
         <div className="mx-auto grid max-w-6xl grid-cols-2 gap-y-8 px-4 py-10 sm:px-6 md:grid-cols-4">
           {[
-            ["0.973", "attendance F1", "on 10 real class photos"],
-            ["97.1%", "faces detected", "of 795 labelled, with tiling"],
-            ["21 → 2", "strangers misnamed", "baseline vs. QuickPic"],
+            ["115/117", "students named correctly", "15 enrolled, 10 real class photos"],
+            ["97.4%", "faces detected", "of 793 labelled, with tiling"],
+            ["32 → 6", "strangers misnamed", "baseline vs. QuickPic"],
             ["6.3 s", "per class photo", "88 faces, laptop CPU"],
           ].map(([value, label, sub]) => (
             <div key={label} className="grid gap-1 border-l border-line pl-5">

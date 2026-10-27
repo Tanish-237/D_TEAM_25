@@ -8,16 +8,16 @@ Report: [paper/quickpic.pdf](paper/quickpic.pdf) (4 pages, IEEE format).
 
 ## Results
 
-On 10 real class photographs (804 hand-labelled faces, 10 enrolled students), with thresholds chosen leave-one-photo-out:
+On 10 real class photographs (804 hand-labelled faces, 117 appearances of 15 enrolled students), with thresholds chosen leave-one-photo-out:
 
 | Configuration | Attendance F1 | Strangers given a student's name |
 |---|---|---|
-| Pretrained baseline (SCRFD + ArcFace R50) | 0.959 | 21 |
-| + tiled detection | 0.966 | 10 |
-| + degradation-aware enrollment | 0.973 | 6 |
-| **+ one-to-one assignment (deployed)** | **0.973** | **2** |
+| Pretrained baseline (SCRFD + ArcFace R50) | 0.954 | 32 |
+| + tiled detection | 0.954 | 15 |
+| + degradation-aware enrollment | 0.966 | 15 |
+| **+ one-to-one assignment (deployed)** | **0.966** | **6** |
 
-Tiling raises detection recall from 0.877 to 0.971. A 4032×3024 photo with 88 faces takes 6.3 s on a laptop CPU. All numbers come from `experiments/results/*.json`.
+The deployed system names 115 of 117 student appearances correctly, and tiling raises detection recall from 0.879 to 0.974. A 4032×3024 photo with 88 faces takes 6.3 s on a laptop CPU. All numbers come from `experiments/results/*.json`.
 
 ## How it works
 

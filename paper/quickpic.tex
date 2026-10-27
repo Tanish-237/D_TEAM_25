@@ -25,7 +25,7 @@ Motilal Nehru National Institute of Technology Allahabad, Prayagraj, India}
 \maketitle
 
 \begin{abstract}
-Taking attendance from one photograph of a classroom is difficult. A typical photo contains dozens of faces that are small, turned away and unevenly lit, and most people in the room are not enrolled in the system at all. We present QuickPic, a pipeline that detects every face in a single class photo, recognises the enrolled students and marks every other face as unknown instead of forcing a match. The detector and the face-embedding network are pretrained and frozen. Our contribution is a classroom-aware decision layer on top of them with four switchable parts: tiled detection for small faces, degradation-aware enrollment, quality-aware score calibration, and a photo-level one-to-one assignment solved with the Hungarian method. We evaluate each part on public benchmarks (LFW, TinyFace and an Indian classroom sample from ICFD) and on ten real photographs of our own class with 804 hand-labelled faces. Tiling raises detection recall from 0.877 to 0.971. The deployed pipeline produces attendance lists with F1 0.973 and cuts the number of non-enrolled faces given an enrolled student's name from 21 to 2. Calibration helps for faces below 20 pixels but not at classroom face sizes. A Django web application lets students register their face with guided, automatically checked photos and lets teachers review and confirm the list.
+Taking attendance from one photograph of a classroom is difficult. A typical photo contains dozens of faces that are small, turned away and unevenly lit, and most people in the room are not enrolled in the system at all. We present QuickPic, a pipeline that detects every face in a single class photo, recognises the enrolled students and marks every other face as unknown instead of forcing a match. The detector and the face-embedding network are pretrained and frozen. Our contribution is a classroom-aware decision layer on top of them with four switchable parts: tiled detection for small faces, degradation-aware enrollment, quality-aware score calibration, and a photo-level one-to-one assignment solved with the Hungarian method. We evaluate each part on public benchmarks (LFW, TinyFace and an Indian classroom sample from ICFD) and on ten real photographs of our own class with 804 hand-labelled faces. Tiling raises detection recall from 0.879 to 0.974. With 15 enrolled students, the deployed pipeline names 115 of 117 student appearances correctly, produces attendance lists with F1 0.966, and cuts the number of non-enrolled faces given an enrolled student's name from 32 to 6. Calibration helps for faces below 20 pixels but not at classroom face sizes. A web application (Django API, React frontend) lets students register their face with guided, automatically checked photos and lets teachers review and confirm the list.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -112,19 +112,19 @@ Padding the matrix with one zero-valued ``unknown'' column per face makes this a
 \subsection{Data and evaluation protocol}
 \textbf{Public data.} LFW~\cite{lfw} (6,000 verification pairs) is a sanity check. TinyFace~\cite{tinyface} is the main test of small faces: the official closed-set protocol with 153,428 distractors, and our open-set protocol with half of the 2,569 identities enrolled (detection and identification rate, DIR, at 1\% false-alarm rate, 5 splits). The public ICFD sample~\cite{icfd} has 10 Indian students enrolled from lab photos and 200 classroom crops (median height 60\,px).
 
-\textbf{Our class.} Ten enrolled classmates (38 enrollment photos) and ten class photographs taken two years earlier (mostly $4032\times3024$, 69--102 faces each). We labelled 804 faces with a local tool: 74 are appearances of enrolled students, 9 are not faces, and the rest (about 90\%) are people who must be rejected as unknown. A detection takes the label of the box it overlaps at IoU $\ge 0.4$. The threshold is never tuned on the photo being scored: for each photo it maximises attendance F1 on the other nine (leave-one-photo-out). 95\% confidence intervals come from 2,000 bootstrap resamples of the photos. We report attendance precision, recall and F1, the false-present count (students marked present who were absent), and ``unknown named'', the number of non-enrolled faces given an enrolled name.
+\textbf{Our class.} Fifteen enrolled classmates (59 enrollment photos, 2--6 each) and ten class photographs taken two years earlier (mostly $4032\times3024$, 69--102 faces each). We labelled 804 faces with a local tool: 117 are appearances of enrolled students, 11 are not faces, and the rest (about 90\%) are people who must be rejected as unknown. A detection takes the label of the box it overlaps at IoU $\ge 0.4$. The threshold is never tuned on the photo being scored: for each photo it maximises attendance F1 on the other nine (leave-one-photo-out). 95\% confidence intervals come from 2,000 bootstrap resamples of the photos. We report attendance precision, recall and F1, the false-present count (students marked present who were absent), and ``unknown named'', the number of non-enrolled faces given an enrolled name.
 
 \subsection{System implementation}
-The engine is a typed Python package; the web application is a thin Django layer with SQLite. Students sign up, join a course by code and register through four guided photos (frontal, turned left, turned right, different light). Each photo is checked automatically: exactly one face, at least 120 pixels tall, sharp enough, evenly lit, and a head turn estimated from the landmarks that matches the requested pose. Only embeddings (with their degraded copies) are stored. Teachers create courses, upload a class photo, review every detected face next to the proposed name on the photo, edit the pre-ticked register and confirm. The class photo is deleted on confirmation, and students can delete their face data at any time. Everything runs on one laptop (Apple M2, CPU only).
+The engine is a typed Python package. The web application is a Django JSON API with SQLite and a React single-page frontend. Students sign up, join a course by code and register through four guided photos (frontal, turned left, turned right, different light). Each photo is checked automatically: exactly one face, at least 120 pixels tall, sharp enough, evenly lit, and a head turn estimated from the landmarks that matches the requested pose. Only embeddings (with their degraded copies) are stored. Teachers create courses, upload a class photo, review every detected face next to the proposed name on the photo, edit the pre-ticked register and confirm. The class photo is deleted on confirmation, and students can delete their face data at any time. Everything runs on one laptop (Apple M2, CPU only).
 
 % ---------------------------------------------------------------------------
 \section{Results and Discussion}
 
 \subsection{Detection}
-Table~\ref{tab:det} shows that tiling raises recall for every detector on our class photos. Without it, a 4032-pixel photo is shrunk 6.3 times and the Haar cascade finds almost nothing. On a synthetic sweep, tiling lowers the smallest reliably detected face for SCRFD-10GF from 96 to 28 pixels, at about 12 times the computation. SCRFD-500MF with tiles (0.943 in 0.13\,s) is the choice where speed matters; YuNet is close in recall but adds many spurious boxes. Since the labels were proposed by tiled SCRFD-10GF and then corrected by hand, its recall is slightly favoured.
+Table~\ref{tab:det} shows that tiling raises recall for every detector on our class photos. Without it, a 4032-pixel photo is shrunk 6.3 times and the Haar cascade finds almost nothing. On a synthetic sweep, tiling lowers the smallest reliably detected face for SCRFD-10GF from 96 to 28 pixels, at about 12 times the computation. SCRFD-500MF with tiles (0.946 in 0.14\,s) is the choice where speed matters; YuNet is close in recall but adds many spurious boxes. Since the labels were proposed by tiled SCRFD-10GF and then corrected by hand, its recall is slightly favoured.
 
 \begin{table}[t]
-\caption{Detection recall on our class photos (795 labelled faces). ``Extra'': boxes overlapping no labelled face. CPU time on an Apple M2.}
+\caption{Detection recall on our class photos (793 labelled faces). ``Extra'': boxes overlapping no labelled face. CPU time on an Apple M2.}
 \label{tab:det}
 \centering
 \setlength{\tabcolsep}{4pt}
@@ -132,14 +132,14 @@ Table~\ref{tab:det} shows that tiling raises recall for every detector on our cl
 \toprule
 Detector & Recall & Found & Extra & ms/photo \\
 \midrule
-SCRFD-10GF & 0.877 & 697 & 0 & 92 \\
-\quad + tiles (T) & \textbf{0.971} & 772 & 5 & 1099 \\
-SCRFD-500MF & 0.803 & 638 & 5 & 12 \\
-\quad + tiles & 0.943 & 750 & 8 & 128 \\
-YuNet & 0.831 & 661 & 58 & 20 \\
-\quad + tiles & 0.961 & 764 & 66 & 103 \\
-Haar (CLAHE) & 0.050 & 40 & 0 & 45 \\
-\quad + tiles & 0.746 & 593 & 38 & 332 \\
+SCRFD-10GF & 0.879 & 697 & 0 & 94 \\
+\quad + tiles (T) & \textbf{0.974} & 772 & 5 & 1167 \\
+SCRFD-500MF & 0.805 & 638 & 5 & 15 \\
+\quad + tiles & 0.946 & 750 & 8 & 135 \\
+YuNet & 0.834 & 661 & 58 & 20 \\
+\quad + tiles & 0.963 & 764 & 66 & 102 \\
+Haar (CLAHE) & 0.050 & 40 & 0 & 48 \\
+\quad + tiles & 0.748 & 593 & 38 & 347 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -189,12 +189,12 @@ all & 0.980 & \textbf{0.989} & 0.0100 & 0.0100 \\
 \end{table}
 
 \subsection{Ablation on our class photographs}
-Table~\ref{tab:ablation} is the main result. The pretrained ResNet-50 alone already gives a good attendance list (F1 0.959), so attendance-level differences are small and their intervals overlap. Face-level errors show the effect of the decision layer more clearly. Without it, 21 non-enrolled faces were given an enrolled student's name. Tiling halves this to 10, degraded enrollment brings it to 6, and one-to-one assignment to 2, a tenfold reduction. Most of these errors leave the list unchanged because the named student is also present elsewhere in the photo, but each is a wrong name the teacher sees during review. The deployed configuration needs 0.4 edits per photo.
+Table~\ref{tab:ablation} is the main result. The pretrained ResNet-50 alone already gives a good attendance list (F1 0.954), so attendance-level differences are small and their intervals overlap. Face-level errors show the effect of the decision layer more clearly. Without it, 32 non-enrolled faces were given an enrolled student's name. Tiling halves this to 15, and one-to-one assignment brings it to 6, a fivefold reduction. Degraded enrollment raises F1 from 0.954 to 0.966 by removing two false presents and one miss. Most stranger errors leave the list unchanged because the named student is also present elsewhere in the photo, but each is a wrong name the teacher sees during review. The deployed configuration names 115 of 117 student appearances correctly and needs 0.8 edits per photo, against 1.1 for the baseline.
 
-Calibration did not help here (F1 0.966 with C against 0.973 without). It was designed for 12--20 pixel faces, where it helps on LFW, but our class faces are mostly 50--130 pixels tall, where it only makes acceptance stricter. The deployed system therefore uses T\,+\,D\,+\,A.
+Calibration did not help here: with or without it the full system reaches F1 0.966, and without one-to-one assignment it names more strangers (19 against 15). It was designed for 12--20 pixel faces, where it helps on LFW, but our class faces are mostly 50--130 pixels tall, where it only makes acceptance stricter. The deployed system therefore uses T\,+\,D\,+\,A.
 
 \begin{table}[t]
-\caption{Ablation on our class photos (10 photos, 804 faces, 74 appearances of 10 enrolled students), ArcFace ResNet-50. F1 with bootstrap 95\% interval. FP: false present; Miss: missed; UN: unknown faces named.}
+\caption{Ablation on our class photos (10 photos, 804 faces, 117 appearances of 15 enrolled students), ArcFace ResNet-50. F1 with bootstrap 95\% interval. FP: false present; Miss: missed; UN: unknown faces named.}
 \label{tab:ablation}
 \centering
 \setlength{\tabcolsep}{2.6pt}
@@ -202,19 +202,19 @@ Calibration did not help here (F1 0.966 with C against 0.973 without). It was de
 \toprule
 Config. & T & D & C & A & F1 [95\% CI] & FP/Miss & UN \\
 \midrule
-Baseline & & & & & 0.959 [.932,.986] & 3/3 & 21 \\
-+T & \cmark & & & & 0.966 [.946,.987] & 3/2 & 10 \\
-+T+D & \cmark & \cmark & & & 0.973 [.953,.993] & 2/2 & 6 \\
-\textbf{+T+D+A} & \cmark & \cmark & & \cmark & \textbf{0.973} [.953,.993] & 2/2 & \textbf{2} \\
-+T+D+C & \cmark & \cmark & \cmark & & 0.966 [.936,.993] & 3/2 & 7 \\
-Full & \cmark & \cmark & \cmark & \cmark & 0.966 [.936,.993] & 3/2 & 3 \\
-Full $-$T & & \cmark & \cmark & \cmark & 0.959 [.925,.988] & 3/3 & 4 \\
-Full $-$D & \cmark & & \cmark & \cmark & 0.953 [.919,.982] & 4/3 & 4 \\
+Baseline & & & & & 0.954 [.932,.974] & 8/3 & 32 \\
++T & \cmark & & & & 0.954 [.943,.967] & 8/3 & 15 \\
++T+D & \cmark & \cmark & & & 0.966 [.952,.981] & 6/2 & 15 \\
+\textbf{+T+D+A} & \cmark & \cmark & & \cmark & \textbf{0.966} [.952,.981] & 6/2 & \textbf{6} \\
++T+D+C & \cmark & \cmark & \cmark & & 0.966 [.950,.982] & 6/2 & 19 \\
+Full & \cmark & \cmark & \cmark & \cmark & 0.966 [.950,.982] & 6/2 & 6 \\
+Full $-$T & & \cmark & \cmark & \cmark & 0.962 [.945,.979] & 6/3 & 8 \\
+Full $-$D & \cmark & & \cmark & \cmark & 0.966 [.957,.978] & 5/3 & 5 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:embclass} compares embedders on the class photos with T\,+\,D\,+\,A. The deep models rank as on TinyFace rank-1. LBP is unusable: at its best threshold it names 90 unknown faces and identifies only 1 of 74 enrolled appearances.
+Table~\ref{tab:embclass} compares embedders on the class photos with T\,+\,D\,+\,A. The deep models rank as on TinyFace rank-1. MobileFaceNet comes close (F1 0.962) and SFace misses 11 appearances. LBP is unusable: at its best threshold it names 121 unknown faces and identifies only 6 of 117 enrolled appearances.
 
 \begin{table}[t]
 \caption{Embedders on our class photos, all with T\,+\,D\,+\,A.}
@@ -225,24 +225,24 @@ Table~\ref{tab:embclass} compares embedders on the class photos with T\,+\,D\,+\
 \toprule
 Embedder & F1 & FP/Miss & UN & Enrolled named \\
 \midrule
-ArcFace ResNet-50 & \textbf{0.973} & 2/2 & 2 & 72/74 \\
-ArcFace MobileFaceNet & 0.932 & 5/5 & 6 & 68/74 \\
-SFace & 0.884 & 8/9 & 15 & 58/74 \\
-LBP histograms & 0.851 & 26/0 & 90 & 1/74 \\
+ArcFace ResNet-50 & \textbf{0.966} & 6/2 & 6 & \textbf{115/117} \\
+ArcFace MobileFaceNet & 0.962 & 5/4 & 6 & 112/117 \\
+SFace & 0.914 & 9/11 & 15 & 100/117 \\
+LBP histograms & 0.876 & 33/0 & 121 & 6/117 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{End-to-end system}
-In the web application, a $4032\times3024$ class photo with 88 detected faces is processed in 6.3\,s on the laptop CPU, including tiled detection and embedding of every face. Nine of the ten enrolled classmates in it were proposed correctly with no wrong names, and confirming the list stored ten attendance records and deleted the photo.
+In the web application, a $4032\times3024$ class photo with 88 detected faces is processed in 6.3\,s on the laptop CPU, including tiled detection and embedding of every face. With the first ten classmates enrolled, nine of the ten in it were proposed correctly with no wrong names, and confirming the list stored ten attendance records and deleted the photo.
 
 \subsection{Limitations and ethics}
-Our class set is small (10 enrolled students, 74 appearances), so attendance-level differences between configurations lie within their confidence intervals; the face-level counts are the clearer signal. Ground-truth boxes were proposed by one of the compared detectors. Face embeddings are biometric data: enrolled classmates gave permission, other people in the photos are processed only on our machine, never labelled with identities, and the raw class data is never published. The InsightFace models are licensed for non-commercial research only. QuickPic proposes a draft that a teacher must confirm, not an automatic decision.
+Our class set is small (15 enrolled students, 117 appearances), so attendance-level differences between configurations lie within their confidence intervals; the face-level counts are the clearer signal. Ground-truth boxes were proposed by one of the compared detectors. Face embeddings are biometric data: enrolled classmates gave permission, other people in the photos are processed only on our machine, never labelled with identities, and the raw class data is never published. The InsightFace models are licensed for non-commercial research only. QuickPic proposes a draft that a teacher must confirm, not an automatic decision.
 
 % ---------------------------------------------------------------------------
 \section{Conclusion}
 
-QuickPic takes attendance from one classroom photograph using frozen pretrained networks and a classroom-aware decision layer. Tiled detection is the most important component: it raises detection recall from 0.877 to 0.971 and recovers faces down to about 28 pixels. Degradation-aware enrollment and one-to-one assignment together cut the number of strangers given an enrolled name from 21 to 2, giving attendance F1 0.973 with fewer than one teacher edit per photo. Quality-aware calibration helps tiny faces on LFW but not at the face sizes of our class photos, so it is left out of the deployed system. Future work includes a larger class dataset with more enrolled students, calibration fitted on in-domain faces, and using group context such as seating positions across lectures.
+QuickPic takes attendance from one classroom photograph using frozen pretrained networks and a classroom-aware decision layer. Tiled detection is the most important component: it raises detection recall from 0.879 to 0.974 and recovers faces down to about 28 pixels. Together with degradation-aware enrollment and one-to-one assignment it cuts the number of strangers given an enrolled name from 32 to 6 and names 115 of 117 student appearances correctly, giving attendance F1 0.966 with fewer than one teacher edit per photo. Quality-aware calibration helps tiny faces on LFW but not at the face sizes of our class photos, so it is left out of the deployed system. Future work includes a larger class dataset with more enrolled students, calibration fitted on in-domain faces, and using group context such as seating positions across lectures.
 
 \section*{Team Contributions}
 \textbf{Tanish Mittal} (lead): system design, recognition decision layer (D, C, A), class-photo ablation, report. \textbf{Shashank Kanaujiya}: face detection, tiled detection (T), detector comparison, class-photo labelling and detection evaluation. \textbf{Utkarsh Raj Singh}: public benchmarks (LFW, TinyFace, ICFD) and embedder comparison. \textbf{Shinde Ritesh Tirupati}: web application (logins, courses, guided registration, review page), photo collection, literature survey. Code: \url{https://github.com/Tanish-237/quickpic}.

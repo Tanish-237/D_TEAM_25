@@ -1,7 +1,7 @@
 {
  "experiment": "class_detection",
- "created": "2026-10-26T19:14:43+00:00",
- "commit": "b863a4b",
+ "created": "2026-10-27T17:13:57+00:00",
+ "commit": "09fee7d",
  "machine": "arm64 Darwin",
  "config": {
   "photos": 10,
@@ -13,82 +13,82 @@
   {
    "detector": "scrfd_10g",
    "tiles": false,
-   "recall": 0.8767295597484277,
+   "recall": 0.8789407313997478,
    "found": 697,
-   "labelled": 795,
+   "labelled": 793,
    "extra_boxes": 0,
-   "median_height_missed": 47.10000000000002,
-   "ms_per_photo": 91.67578330088872
+   "median_height_missed": 47.35000000000002,
+   "ms_per_photo": 93.86595800169744
   },
   {
    "detector": "scrfd_10g",
    "tiles": true,
-   "recall": 0.9710691823899371,
+   "recall": 0.9735182849936949,
    "found": 772,
-   "labelled": 795,
+   "labelled": 793,
    "extra_boxes": 5,
-   "median_height_missed": 38.19999999999993,
-   "ms_per_photo": 1098.7870291020954
+   "median_height_missed": 39.39999999999998,
+   "ms_per_photo": 1166.6808082998614
   },
   {
    "detector": "scrfd_500m",
    "tiles": false,
-   "recall": 0.8025157232704403,
+   "recall": 0.8045397225725095,
    "found": 638,
-   "labelled": 795,
+   "labelled": 793,
    "extra_boxes": 5,
-   "median_height_missed": 50.80000000000018,
-   "ms_per_photo": 12.245624995557591
+   "median_height_missed": 50.89999999999998,
+   "ms_per_photo": 15.26387070043711
   },
   {
    "detector": "scrfd_500m",
    "tiles": true,
-   "recall": 0.9433962264150944,
+   "recall": 0.9457755359394704,
    "found": 750,
-   "labelled": 795,
+   "labelled": 793,
    "extra_boxes": 8,
    "median_height_missed": 43.40000000000009,
-   "ms_per_photo": 128.19472499977564
+   "ms_per_photo": 135.3349957978935
   },
   {
    "detector": "yunet",
    "tiles": false,
-   "recall": 0.8314465408805032,
+   "recall": 0.8335435056746532,
    "found": 661,
-   "labelled": 795,
+   "labelled": 793,
    "extra_boxes": 58,
-   "median_height_missed": 49.05000000000001,
-   "ms_per_photo": 20.34233320009662
+   "median_height_missed": 49.150000000000034,
+   "ms_per_photo": 19.77455009764526
   },
   {
    "detector": "yunet",
    "tiles": true,
-   "recall": 0.9610062893081761,
+   "recall": 0.9634300126103404,
    "found": 764,
-   "labelled": 795,
+   "labelled": 793,
    "extra_boxes": 66,
-   "median_height_missed": 44.80000000000007,
-   "ms_per_photo": 102.54313320037909
+   "median_height_missed": 45.19999999999993,
+   "ms_per_photo": 101.54181270045228
   },
   {
    "detector": "haar",
    "tiles": false,
-   "recall": 0.050314465408805034,
+   "recall": 0.05044136191677175,
    "found": 40,
-   "labelled": 795,
+   "labelled": 793,
    "extra_boxes": 0,
-   "median_height_missed": 74.39999999999986,
-   "ms_per_photo": 44.608920902828686
+   "median_height_missed": 74.59999999999991,
+   "ms_per_photo": 47.51268319960218
   },
   {
    "detector": "haar",
    "tiles": true,
-   "recall": 0.7459119496855345,
+   "recall": 0.7477931904161412,
    "found": 593,
-   "labelled": 795,
+   "labelled": 793,
    "extra_boxes": 38,
-   "median_height_missed": 46.64999999999998,
-   "ms_per_photo": 331.93413330009207
+   "median_height_missed": 46.699999999999875,
+   "ms_per_photo": 347.107191599207
   }
  ]
 }
