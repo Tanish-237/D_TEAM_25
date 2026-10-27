@@ -80,6 +80,8 @@ class DetectedFace(models.Model):
     box = models.JSONField()
     crop = models.BinaryField()
     score = models.FloatField()
+    # Best score minus the best score of any other student: small when two students look alike.
+    margin = models.FloatField(null=True, blank=True)
     proposed = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
     class Meta:

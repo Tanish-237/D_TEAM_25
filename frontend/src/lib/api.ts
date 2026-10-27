@@ -143,6 +143,7 @@ export interface Face {
   index: number;
   box: [number, number, number, number];
   score: number;
+  margin: number | null;
   proposed: number | null;
 }
 
@@ -158,7 +159,7 @@ export interface SessionDetail {
   topic: string;
   status: "draft" | "confirmed";
   seconds: number;
-  unsure_below: number;
+  unsure_margin: number;
   photo: { width: number; height: number } | null;
   faces: Face[];
   roster: RosterEntry[];

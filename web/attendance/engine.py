@@ -131,9 +131,12 @@ def process_session(session: ClassSession) -> None:
         gallery = Gallery.from_dict(gallery_dict)
         result = engine.decide(faces, gallery, engine.config.threshold)
         best = result.scores.max(axis=1) if len(faces) else np.empty(0)
+        top_two = np.sort(result.scores, axis=1)[:, -2:] if len(gallery.ids) > 1 else None
+        margins = top_two[:, 1] - top_two[:, 0] if top_two is not None else np.ones(len(faces))
         decisions, ids = result.decisions, gallery.ids
     else:
         best, decisions, ids = np.zeros(len(faces)), np.full(len(faces), UNKNOWN), []
+        margins = np.ones(len(faces))
 
     by_id = {s.pk: s for s in students}
     session.faces.all().delete()
@@ -146,6 +149,7 @@ def process_session(session: ClassSession) -> None:
             box=[round(float(v)) for v in box],
             crop=context_crop(image, box),
             score=float(best[original]) if len(best) else 0.0,
+            margin=float(margins[original]),
             proposed=by_id[ids[decision]] if decision != UNKNOWN else None,
         )
     session.seconds = time.perf_counter() - start

@@ -168,6 +168,12 @@ function FacePanel({
           <span className="text-xs text-muted">
             best similarity <span className="num text-ink">{face.score.toFixed(2)}</span>
             <br />
+            {face.margin !== null && (
+              <>
+                gap to next student <span className="num text-ink">{face.margin.toFixed(2)}</span>
+                <br />
+              </>
+            )}
             height <span className="num text-ink">{face.box[3] - face.box[1]}</span> px
           </span>
         </div>
@@ -175,7 +181,7 @@ function FacePanel({
       {unsure && current != null && (
         <div className="grid gap-2 rounded-xl bg-warn-soft px-3 py-2.5 text-sm text-warn">
           <span>
-            <span className="font-medium">Not sure.</span> The match is weak, so please check this face.
+            <span className="font-medium">Not sure.</span> Another student looks almost as similar, so please check this face.
           </span>
           <Button size="sm" variant="secondary" icon={<Check className="size-3.5" />} onClick={() => onAccept(face.index)}>
             Yes, this is {roster.find((s) => s.id === current)?.first_name || "them"}
@@ -319,11 +325,12 @@ function Review({ session }: { session: SessionDetail }) {
   }, [assign]);
 
   const named = Object.values(assign).filter((v) => v != null).length;
-  // A name the system proposed with a weak score, which the teacher has not yet confirmed or changed.
+  // A proposed name where another student scored almost as high, not yet confirmed or changed.
   const isUnsure = (face: Face) =>
     assign[face.index] != null &&
     assign[face.index] === face.proposed &&
-    face.score < session.unsure_below &&
+    face.margin !== null &&
+    face.margin < session.unsure_margin &&
     !checked.has(face.index);
   const unsureFaces = session.faces.filter(isUnsure);
   const accept = (index: number) => setChecked((c) => new Set(c).add(index));

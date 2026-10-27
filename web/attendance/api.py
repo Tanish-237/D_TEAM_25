@@ -600,13 +600,14 @@ def session_detail(request, session_id: int):
         "topic": session.topic,
         "status": session.status,
         "seconds": round(session.seconds, 1),
-        "unsure_below": settings.QUICKPIC_UNSURE,
+        "unsure_margin": settings.QUICKPIC_UNSURE_MARGIN,
         "photo": {"width": width, "height": height} if session.photo else None,
         "faces": [
             {
                 "index": f.index,
                 "box": f.box,
                 "score": round(f.score, 3),
+                "margin": None if f.margin is None else round(f.margin, 3),
                 "proposed": f.proposed_id,
             }
             for f in session.faces.all()

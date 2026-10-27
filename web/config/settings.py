@@ -91,6 +91,7 @@ TEACHER_SIGNUP_CODE = os.environ.get("QUICKPIC_TEACHER_CODE", "ipcv-2026")
 # Recognition settings, from the class-photo evaluation (experiments/results/class_eval.json).
 QUICKPIC_CALIBRATOR = None
 QUICKPIC_THRESHOLD = 0.35
-# Proposed names scoring below this are flagged for the teacher to double-check. On the class
-# photos every correct name scored above it, and borderline mistakes fell between 0.35 and it.
-QUICKPIC_UNSURE = float(os.environ.get("QUICKPIC_UNSURE", "0.42"))
+# A proposed name is flagged for the teacher to double-check when another student scored almost
+# as high (best minus second-best below this). On the labelled class photos this flags both
+# borderline mistakes and 2 of 115 correct names; a plain score cut-off flagged 3-6 correct names.
+QUICKPIC_UNSURE_MARGIN = float(os.environ.get("QUICKPIC_UNSURE_MARGIN", "0.06"))
