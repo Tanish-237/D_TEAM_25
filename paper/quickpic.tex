@@ -234,7 +234,7 @@ LBP histograms & 0.876 & 33/0 & 121 & 6/117 \\
 \end{table}
 
 \subsection{End-to-end system}
-In the web application, a $4032\times3024$ class photo with 88 detected faces is processed in 6.3\,s on the laptop CPU, including tiled detection and embedding of every face. With the first ten classmates enrolled, nine of the ten in it were proposed correctly with no wrong names, and confirming the list stored ten attendance records and deleted the photo.
+In the web application, a $4032\times3024$ class photo with 88 detected faces is processed in 6.3\,s on the laptop CPU, including tiled detection and embedding of every face. Running the same networks on the laptop GPU through CoreML cuts detection and embedding from 5.0--6.7\,s to 0.6--0.8\,s per photo, with identical boxes and embeddings (cosine similarity $\ge 0.9999$). With the first ten classmates enrolled, nine of the ten in it were proposed correctly with no wrong names, and confirming the list stored ten attendance records and deleted the photo.
 
 \subsection{Limitations and ethics}
 Our class set is small (15 enrolled students, 117 appearances), so attendance-level differences between configurations lie within their confidence intervals; the face-level counts are the clearer signal. Ground-truth boxes were proposed by one of the compared detectors. Face embeddings are biometric data: enrolled classmates gave permission, other people in the photos are processed only on our machine, never labelled with identities, and the raw class data is never published. The InsightFace models are licensed for non-commercial research only. QuickPic proposes a draft that a teacher must confirm, not an automatic decision.

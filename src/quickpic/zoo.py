@@ -9,12 +9,12 @@ from quickpic.tiling import TiledDetector
 
 MODELS_DIR = Path(os.environ.get("QUICKPIC_MODELS", Path(__file__).resolve().parents[2] / "models"))
 
-# Set QUICKPIC_DEVICE=cuda on a GPU machine such as Colab; the default is CPU only.
-PROVIDERS = (
-    ["CUDAExecutionProvider", "CPUExecutionProvider"]
-    if os.environ.get("QUICKPIC_DEVICE") == "cuda"
-    else ["CPUExecutionProvider"]
-)
+# QUICKPIC_DEVICE=cuda on an NVIDIA GPU such as Colab, coreml on an Apple-silicon Mac;
+# the default is CPU only.
+PROVIDERS = {
+    "cuda": ["CUDAExecutionProvider", "CPUExecutionProvider"],
+    "coreml": ["CoreMLExecutionProvider", "CPUExecutionProvider"],
+}.get(os.environ.get("QUICKPIC_DEVICE", ""), ["CPUExecutionProvider"])
 
 DETECTORS = ("scrfd_10g", "scrfd_500m", "yunet", "haar")
 EMBEDDERS = ("arcface_r50", "arcface_mbf", "sface", "lbp")

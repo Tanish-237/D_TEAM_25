@@ -17,8 +17,8 @@ from quickpic.imageio import resize_to_max_side
 
 
 def device_id(providers: list[str]) -> int:
-    """InsightFace convention: 0 means the first GPU, -1 forces the CPU."""
-    return 0 if "CUDAExecutionProvider" in providers else -1
+    """InsightFace convention: 0 keeps the given accelerator providers, -1 forces the CPU."""
+    return 0 if providers[0] != "CPUExecutionProvider" else -1
 
 
 class Detector(Protocol):

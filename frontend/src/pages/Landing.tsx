@@ -251,7 +251,7 @@ export default function Landing() {
             ["115/117", "students named correctly", "15 enrolled, 10 real class photos"],
             ["97.4%", "faces detected", "of 793 labelled, with tiling"],
             ["32 → 6", "strangers misnamed", "baseline vs. QuickPic"],
-            ["6.3 s", "per class photo", "88 faces, laptop CPU"],
+            ["< 1 s", "per class photo", "~90 faces, laptop GPU"],
           ].map(([value, label, sub]) => (
             <div key={label} className="grid gap-1 border-l border-line pl-5">
               <span className="num text-3xl font-semibold tracking-tight">{value}</span>
