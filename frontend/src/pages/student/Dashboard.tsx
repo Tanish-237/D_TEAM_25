@@ -8,6 +8,7 @@ import {
   Badge,
   Button,
   Card,
+  ConfirmDialog,
   cx,
   Dialog,
   Empty,
@@ -22,8 +23,7 @@ function JoinCourse({ open, onClose }: { open: boolean; onClose: () => void }) {
   const client = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const join = useMutation({
-    mutationFn: (code: string) =>
-      api<{ subject: string }>("/student/courses/join", { json: { code } }),
+    mutationFn: (code: string) => api<{ subject: string }>("/student/courses/join", { json: { code } }),
     onSuccess: (course) => {
       client.invalidateQueries({ queryKey: ["student"] });
       toast.success(`Joined ${course.subject}`);
@@ -37,7 +37,12 @@ function JoinCourse({ open, onClose }: { open: boolean; onClose: () => void }) {
     join.mutate(String(new FormData(event.currentTarget).get("code")));
   };
   return (
-    <Dialog open={open} onClose={onClose} title="Join a course" description="Ask your teacher for the six-character course code.">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title="Join a course"
+      description="Ask your teacher for the six-character course code."
+    >
       <form onSubmit={submit} className="grid gap-4">
         <Input
           name="code"
@@ -47,7 +52,7 @@ function JoinCourse({ open, onClose }: { open: boolean; onClose: () => void }) {
           autoFocus
           className="num h-14 text-center text-2xl tracking-[0.4em] uppercase"
         />
-        {error && <p className="text-sm text-danger">{error}</p>}
+        {error && <p className="text-danger text-sm">{error}</p>}
         <Button type="submit" loading={join.isPending}>
           Join course
         </Button>
@@ -70,13 +75,13 @@ function FaceCard({ face }: { face: StudentOverview["face"] }) {
 
   if (!face) {
     return (
-      <Card className="flex flex-wrap items-center gap-5 border-warn/30 bg-warn-soft/40 p-6">
-        <div className="grid size-12 place-items-center rounded-xl bg-warn-soft text-warn">
+      <Card className="border-warn/30 bg-warn-soft/40 flex flex-wrap items-center gap-5 p-6">
+        <div className="bg-warn-soft text-warn grid size-12 place-items-center rounded-xl">
           <ScanFace className="size-6" />
         </div>
         <div className="grid min-w-0 flex-1 gap-1">
           <h2 className="font-semibold">Register your face to be marked present</h2>
-          <p className="text-sm text-muted">
+          <p className="text-muted text-sm">
             Four guided photos, about two minutes. The photos are not stored, only a numeric signature.
           </p>
         </div>
@@ -89,7 +94,7 @@ function FaceCard({ face }: { face: StudentOverview["face"] }) {
 
   return (
     <Card className="flex flex-wrap items-center gap-5 p-6">
-      <div className="brackets grid size-12 place-items-center text-signal">
+      <div className="brackets text-signal grid size-12 place-items-center">
         <ShieldCheck className="size-6" />
       </div>
       <div className="grid min-w-0 flex-1 gap-1">
@@ -99,9 +104,9 @@ function FaceCard({ face }: { face: StudentOverview["face"] }) {
             <Check className="size-3" /> active
           </Badge>
         </div>
-        <p className="text-sm text-muted">
-          {face.photos_used} photo{face.photos_used === 1 ? "" : "s"} → <span className="num">{face.templates}</span> templates
-          (originals plus degraded copies) · updated {formatDate(face.updated)}
+        <p className="text-muted text-sm">
+          {face.photos_used} photo{face.photos_used === 1 ? "" : "s"} → <span className="num">{face.templates}</span>{" "}
+          templates (originals plus degraded copies) · updated {formatDate(face.updated)}
         </p>
       </div>
       <div className="flex gap-2">
@@ -114,21 +119,15 @@ function FaceCard({ face }: { face: StudentOverview["face"] }) {
           Delete
         </Button>
       </div>
-      <Dialog
+      <ConfirmDialog
         open={confirming}
         onClose={() => setConfirming(false)}
         title="Delete your face data?"
         description="Your stored face signature is erased. You will not be recognised in class photos until you register again. Past attendance stays."
-      >
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={() => setConfirming(false)}>
-            Cancel
-          </Button>
-          <Button variant="danger" loading={remove.isPending} onClick={() => remove.mutate()}>
-            Delete face data
-          </Button>
-        </div>
-      </Dialog>
+        confirmLabel="Delete face data"
+        loading={remove.isPending}
+        onConfirm={() => remove.mutate()}
+      />
     </Card>
   );
 }
@@ -145,17 +144,15 @@ function LeaveCourse({ course, open, onClose }: { course: StudentCourse; open: b
     onError: (e) => toast.error(e.message),
   });
   return (
-    <Dialog
+    <ConfirmDialog
       open={open}
       onClose={onClose}
       title={`Leave ${course.subject}?`}
       description="You will no longer be marked in new lectures. Attendance already recorded stays with your teacher. You can rejoin later with the course code."
-    >
-      <div className="flex justify-end gap-2">
-        <Button variant="secondary" onClick={onClose}>Cancel</Button>
-        <Button variant="danger" loading={leave.isPending} onClick={() => leave.mutate()}>Leave course</Button>
-      </div>
-    </Dialog>
+      confirmLabel="Leave course"
+      loading={leave.isPending}
+      onConfirm={() => leave.mutate()}
+    />
   );
 }
 
@@ -164,7 +161,10 @@ function CourseCard({ course }: { course: StudentCourse }) {
   const [leaving, setLeaving] = useState(false);
   const strip = [...course.records].reverse();
   const leaveButton = (
-    <button onClick={() => setLeaving(true)} className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-danger">
+    <button
+      onClick={() => setLeaving(true)}
+      className="text-muted hover:text-danger inline-flex items-center gap-1.5 text-sm"
+    >
       <LogOut className="size-3.5" /> Leave course
     </button>
   );
@@ -175,23 +175,23 @@ function CourseCard({ course }: { course: StudentCourse }) {
         <ProgressRing value={course.percent} />
         <div className="grid min-w-0 flex-1 gap-1">
           <h3 className="truncate font-semibold">{course.subject}</h3>
-          <p className="text-sm text-muted">
+          <p className="text-muted text-sm">
             {course.teacher} · Year {course.year}, Sem {course.semester}
           </p>
         </div>
-        <span className="num rounded-md bg-sunken px-2 py-1 text-xs text-muted">{course.code}</span>
+        <span className="num bg-sunken text-muted rounded-md px-2 py-1 text-xs">{course.code}</span>
       </div>
       {course.total === 0 ? (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted">No lectures recorded yet.</p>
+          <p className="text-muted text-sm">No lectures recorded yet.</p>
           {leaveButton}
         </div>
       ) : (
         <>
           <div className="grid gap-2">
-            <div className="flex justify-between text-xs text-muted">
+            <div className="text-muted flex justify-between text-xs">
               <span>
-                <span className="num font-medium text-ink">{course.present}</span> of{" "}
+                <span className="num text-ink font-medium">{course.present}</span> of{" "}
                 <span className="num">{course.total}</span> lectures
               </span>
               <span>oldest → latest</span>
@@ -207,21 +207,25 @@ function CourseCard({ course }: { course: StudentCourse }) {
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <button onClick={() => setExpanded(!expanded)} className="text-sm font-medium text-muted hover:text-ink">
+            <button onClick={() => setExpanded(!expanded)} className="text-muted hover:text-ink text-sm font-medium">
               {expanded ? "Hide history" : "Show history"}
             </button>
             {leaveButton}
           </div>
           {expanded && (
-            <ul className="divide-y divide-line rounded-xl border border-line">
+            <ul className="divide-line border-line divide-y rounded-xl border">
               {course.records.map((r, i) => (
                 <li key={i} className="flex items-center gap-3 px-4 py-2.5 text-sm">
-                  <span className="num w-20 text-muted">{formatDate(r.date)}</span>
+                  <span className="num text-muted w-20">{formatDate(r.date)}</span>
                   <span className="min-w-0 flex-1 truncate">{r.topic || "Lecture"}</span>
                   {r.present ? (
-                    <Badge tone="signal"><Check className="size-3" /> Present</Badge>
+                    <Badge tone="signal">
+                      <Check className="size-3" /> Present
+                    </Badge>
                   ) : (
-                    <Badge tone="danger"><X className="size-3" /> Absent</Badge>
+                    <Badge tone="danger">
+                      <X className="size-3" /> Absent
+                    </Badge>
                   )}
                 </li>
               ))}
@@ -258,7 +262,7 @@ export default function StudentDashboard() {
       >
         {total > 0 ? (
           <>
-            Overall you attended <span className="num font-medium text-ink">{present}</span> of{" "}
+            Overall you attended <span className="num text-ink font-medium">{present}</span> of{" "}
             <span className="num">{total}</span> lectures (
             <span className="num">{Math.round((100 * present) / total)}%</span>).
           </>
@@ -280,7 +284,7 @@ export default function StudentDashboard() {
             Your teacher shares a six-character code for each course.
           </Empty>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 animate-rise [animation-delay:120ms]">
+          <div className="animate-rise grid gap-4 [animation-delay:120ms] md:grid-cols-2">
             {data.courses.map((course) => (
               <CourseCard key={course.id} course={course} />
             ))}

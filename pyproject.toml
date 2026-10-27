@@ -2,6 +2,8 @@
 name = "quickpic"
 version = "0.1.0"
 description = "Open-set face recognition for classroom attendance from a single photograph"
+readme = "README.md"
+license = "MIT"
 authors = [
     { name = "Tanish Mittal", email = "tanish.20233288@mnnit.ac.in" }
 ]

@@ -40,7 +40,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="grid size-9 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
+      className="text-muted hover:bg-sunken hover:text-ink grid size-9 place-items-center rounded-lg"
       aria-label="Toggle dark mode"
     >
       {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
@@ -76,7 +76,7 @@ export function AppShell({ role }: { role: Role }) {
 
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-30 border-b border-line bg-paper/85 backdrop-blur">
+      <header className="border-line bg-paper/85 sticky top-0 z-30 border-b backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 sm:px-6">
           <Logo />
           <nav className="hidden items-center gap-1 sm:flex">
@@ -88,7 +88,7 @@ export function AppShell({ role }: { role: Role }) {
                 className={({ isActive }) =>
                   cx(
                     "rounded-lg px-3 py-1.5 text-sm transition",
-                    isActive ? "bg-sunken font-medium text-ink" : "text-muted hover:text-ink",
+                    isActive ? "bg-sunken text-ink font-medium" : "text-muted hover:text-ink",
                   )
                 }
               >
@@ -98,16 +98,16 @@ export function AppShell({ role }: { role: Role }) {
           </nav>
           <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />
-            <div className="mx-2 hidden h-6 w-px bg-line sm:block" />
+            <div className="bg-line mx-2 hidden h-6 w-px sm:block" />
             <Link
               to={`/${role}/profile`}
-              className="hidden items-center gap-2.5 rounded-lg py-1 pr-2 pl-1 hover:bg-sunken sm:flex"
+              className="hover:bg-sunken hidden items-center gap-2.5 rounded-lg py-1 pr-2 pl-1 sm:flex"
               title="Your profile"
             >
               <Avatar name={user.name} size={30} />
               <div className="grid leading-tight">
                 <span className="text-[13px] font-medium">{user.name}</span>
-                <span className="text-[11px] text-muted capitalize">
+                <span className="text-muted text-[11px] capitalize">
                   {user.role}
                   {user.roll_no && <span className="num"> · {user.roll_no}</span>}
                 </span>
@@ -115,7 +115,7 @@ export function AppShell({ role }: { role: Role }) {
             </Link>
             <button
               onClick={logout}
-              className="ml-1 grid size-9 place-items-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
+              className="text-muted hover:bg-sunken hover:text-ink ml-1 grid size-9 place-items-center rounded-lg"
               aria-label="Log out"
               title="Log out"
             >
@@ -160,11 +160,11 @@ export function PageHeader({
   actions?: React.ReactNode;
 }) {
   return (
-    <div className="mb-8 flex flex-wrap items-end justify-between gap-4 animate-rise">
+    <div className="animate-rise mb-8 flex flex-wrap items-end justify-between gap-4">
       <div className="grid min-w-0 gap-1.5">
         {eyebrow && <div className="label">{eyebrow}</div>}
         <h1 className="text-2xl font-semibold sm:text-[28px]">{title}</h1>
-        {children && <div className="text-sm text-muted">{children}</div>}
+        {children && <div className="text-muted text-sm">{children}</div>}
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </div>

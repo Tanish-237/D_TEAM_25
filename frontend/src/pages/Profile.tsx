@@ -32,7 +32,7 @@ function ProfileCard({ data }: { data: ProfileData }) {
     <Card className="overflow-hidden">
       <div className="h-20 bg-[linear-gradient(135deg,var(--sunken),var(--surface))]" />
       <div className="-mt-10 flex flex-wrap items-end gap-5 px-6 pb-6">
-        <div className="rounded-full bg-surface p-1">
+        <div className="bg-surface rounded-full p-1">
           <Avatar name={user.name} size={80} />
         </div>
         <div className="grid min-w-0 flex-1 gap-1 pb-1">
@@ -52,7 +52,7 @@ function ProfileCard({ data }: { data: ProfileData }) {
                 </Link>
               ))}
           </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
+          <div className="text-muted flex flex-wrap gap-x-4 gap-y-1 text-sm">
             <span className="num">@{user.username}</span>
             {user.roll_no && (
               <span>
@@ -68,7 +68,7 @@ function ProfileCard({ data }: { data: ProfileData }) {
           {items.map(([label, value]) => (
             <div key={label} className="grid gap-0.5 text-right">
               <span className="num text-xl font-semibold">{value}</span>
-              <span className="text-xs text-muted">{label}</span>
+              <span className="text-muted text-xs">{label}</span>
             </div>
           ))}
           {user.role === "student" && <ProgressRing value={stats.percent ?? null} size={52} />}
@@ -96,7 +96,7 @@ function Section({
           {icon}
           {title}
         </div>
-        <p className="text-sm text-muted">{description}</p>
+        <p className="text-muted text-sm">{description}</p>
       </div>
       <div className="min-w-0">{children}</div>
     </Card>
@@ -126,9 +126,21 @@ function ProfileForm({ user }: { user: User }) {
         <Field label="Last name" name="last_name" defaultValue={user.last_name} />
       </div>
       {user.role === "student" && (
-        <Field label="Roll number" name="roll_no" defaultValue={user.roll_no} required className="[&_input]:font-mono" />
+        <Field
+          label="Roll number"
+          name="roll_no"
+          defaultValue={user.roll_no}
+          required
+          className="[&_input]:font-mono"
+        />
       )}
-      <Field label="Username" name="username_display" value={user.username} disabled hint="Usernames cannot be changed." />
+      <Field
+        label="Username"
+        name="username_display"
+        value={user.username}
+        disabled
+        hint="Usernames cannot be changed."
+      />
       <Button type="submit" loading={save.isPending} className="justify-self-start">
         Save profile
       </Button>
@@ -161,9 +173,17 @@ function Password() {
   return (
     <form onSubmit={submit} className="grid max-w-md gap-4">
       <Field label="Current password" name="current" type="password" autoComplete="current-password" required />
-      <Field label="New password" name="new" type="password" autoComplete="new-password" minLength={8} required hint="At least 8 characters." />
+      <Field
+        label="New password"
+        name="new"
+        type="password"
+        autoComplete="new-password"
+        minLength={8}
+        required
+        hint="At least 8 characters."
+      />
       <Field label="Repeat new password" name="repeat" type="password" autoComplete="new-password" required />
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {error && <p className="text-danger text-sm">{error}</p>}
       <Button type="submit" variant="secondary" loading={change.isPending} className="justify-self-start">
         Change password
       </Button>
@@ -192,8 +212,13 @@ function DeleteAccount({ user }: { user: User }) {
   return (
     <>
       <div className="grid max-w-md gap-3">
-        <p className="text-sm text-muted">{consequence} This cannot be undone.</p>
-        <Button variant="danger" icon={<Trash2 className="size-4" />} onClick={() => setOpen(true)} className="justify-self-start">
+        <p className="text-muted text-sm">{consequence} This cannot be undone.</p>
+        <Button
+          variant="danger"
+          icon={<Trash2 className="size-4" />}
+          onClick={() => setOpen(true)}
+          className="justify-self-start"
+        >
           Delete my account
         </Button>
       </div>
@@ -207,7 +232,7 @@ function DeleteAccount({ user }: { user: User }) {
           className="grid gap-4"
         >
           <Field label="Type your password to confirm" name="password" type="password" required autoFocus />
-          {error && <p className="text-sm text-danger">{error}</p>}
+          {error && <p className="text-danger text-sm">{error}</p>}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
               Cancel
@@ -232,15 +257,27 @@ export default function Profile() {
   return (
     <>
       <PageHeader eyebrow="Profile" title="Your profile" />
-      <div className="grid gap-4 animate-rise">
+      <div className="animate-rise grid gap-4">
         <ProfileCard data={data} />
-        <Section icon={<UserRound className="size-4" />} title="Details" description="Your name as teachers and students see it.">
+        <Section
+          icon={<UserRound className="size-4" />}
+          title="Details"
+          description="Your name as teachers and students see it."
+        >
           <ProfileForm user={user} />
         </Section>
-        <Section icon={<KeyRound className="size-4" />} title="Password" description="You stay logged in on this device after changing it.">
+        <Section
+          icon={<KeyRound className="size-4" />}
+          title="Password"
+          description="You stay logged in on this device after changing it."
+        >
           <Password />
         </Section>
-        <Section icon={<Trash2 className="size-4 text-danger" />} title="Delete account" description="Permanently remove your account and its data.">
+        <Section
+          icon={<Trash2 className="text-danger size-4" />}
+          title="Delete account"
+          description="Permanently remove your account and its data."
+        >
           <DeleteAccount user={user} />
         </Section>
       </div>

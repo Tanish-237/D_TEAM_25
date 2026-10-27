@@ -1,95 +1,169 @@
+<div align="center">
+
 # QuickPic
 
-Attendance from one photograph of a classroom. QuickPic detects every face in the photo, recognises the enrolled students, and marks everyone else as unknown. The teacher then confirms or edits the draft list.
+**One photo. The whole register.**
 
-Course project for Image Processing and Computer Vision (Semester VII), MNNIT Allahabad.
+Classroom attendance from a single photograph: QuickPic finds every face, names the enrolled students, leaves everyone else as unknown, and hands the teacher a draft register to confirm.
 
-Report: [paper/quickpic.pdf](paper/quickpic.pdf) (4 pages, IEEE format).
+[![CI](https://github.com/Tanish-237/quickpic/actions/workflows/ci.yml/badge.svg)](https://github.com/Tanish-237/quickpic/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)
+![React 19](https://img.shields.io/badge/react-19-61dafb.svg)
 
-## Results
+[Report (PDF)](paper/quickpic.pdf) · [Design decisions](docs/decisions.md) · IPCV course project, MNNIT Allahabad
 
-On 10 real class photographs (804 hand-labelled faces, 117 appearances of 15 enrolled students), with thresholds chosen leave-one-photo-out:
+![QuickPic landing page](docs/assets/landing.png)
 
-| Configuration | Attendance F1 | Strangers given a student's name |
-|---|---|---|
-| Pretrained baseline (SCRFD + ArcFace R50) | 0.954 | 32 |
-| + tiled detection | 0.954 | 15 |
-| + degradation-aware enrollment | 0.966 | 15 |
-| **+ one-to-one assignment (deployed)** | **0.966** | **6** |
+</div>
 
-The deployed system names 115 of 117 student appearances correctly, and tiling raises detection recall from 0.879 to 0.974. A 4032×3024 photo with 88 faces takes 6.3 s on a laptop CPU, or under a second for detection and embedding on an Apple M2 GPU (used automatically by the web app; start it with `QUICKPIC_DEVICE=cpu make web` to use the CPU). The first photo after installing compiles the networks for the GPU once (about 10–25 s); the result is cached in `models/coreml-cache/`. All numbers come from `experiments/results/*.json`.
+## Highlights
+
+- **115 of 117** enrolled-student appearances named correctly on 10 real class photos (69–102 faces each).
+- **5× fewer strangers misnamed** than the pretrained baseline (32 → 6), from our classroom-aware decision layer.
+- **97.4 %** of faces detected, including 30-pixel faces at the back of the room, thanks to tiled detection.
+- **Under a second** per class photo on a laptop GPU (Apple M2 via CoreML), 6 s on CPU.
+- **Knows when it is unsure:** names where another student scored almost as high are flagged for the teacher.
+- **Privacy by design:** only face embeddings are stored; class photos are deleted on confirmation; nothing leaves the laptop.
 
 ## How it works
 
+```mermaid
+flowchart LR
+    P[Class photo] --> D[Detect<br/>SCRFD]
+    D --> T[Tiling<br/><i>ours</i>]
+    T --> A[Align<br/>5 landmarks → 112×112]
+    A --> E[Embed<br/>ArcFace R50]
+    E --> M[Match<br/>degraded gallery <i>ours</i>]
+    M --> H[Assign<br/>Hungarian <i>ours</i>]
+    H --> R[Draft register<br/>teacher confirms]
 ```
-class photo ─► detect ─► align ─► embed ─► match ─► assign ─► draft list ─► teacher confirms
-```
 
-1. **Detect.** Find each face and its five landmarks (SCRFD, YuNet, or a Haar cascade as the classical baseline).
-2. **Align.** Warp each face onto a fixed 112×112 template using its landmarks.
-3. **Embed.** Map each face to a fixed-length vector, its embedding, with a frozen network (ArcFace, SFace, or LBP histograms as the classical baseline). Photos of the same person give nearby vectors.
-4. **Match.** Compare each face with every enrolled student's stored vectors.
-5. **Assign.** Decide all faces in the photo jointly, so each student is matched at most once and weak matches become unknown.
+The detector and the face network are pretrained and frozen. Our contribution is the decision layer around them, where each part can be switched off for the ablation:
 
-Our contribution is the classroom-aware decision layer in steps 1, 4 and 5, each part of which can be switched off for the ablation:
-
-| Component | Problem it targets |
+| Component | Problem it solves |
 |---|---|
-| Tiled detection | Faces at the back of the room are too small after the photo is downscaled |
-| Degradation-aware enrollment | Enrollment selfies are sharp; classroom faces are small and blurred |
-| Quality-aware calibration | A single similarity threshold is wrong for low-quality faces |
-| One-to-one assignment | Two faces must never be given the same student |
+| **Tiled detection** | A 4032-px photo is shrunk to 640 px before detection, so back-row faces vanish. We detect on overlapping full-resolution tiles. |
+| **Degradation-aware enrollment** | Registration selfies are sharp; classroom faces are small and blurred. Each student is stored with blurred, darkened and down-scaled copies. |
+| **One-to-one assignment** | Two faces must never get the same name. All faces in a photo are assigned jointly with the Hungarian method; weak matches stay unknown. |
+| Quality-aware calibration | Tested and reported: it helps faces under 20 px but not at classroom sizes, so it is off in the deployed system. |
 
-## Quickstart
+## Results
 
-Requires [uv](https://docs.astral.sh/uv/), Node.js 20+ and [pnpm](https://pnpm.io/).
+10 real class photographs, 804 hand-labelled faces, 117 appearances of 15 enrolled students; thresholds chosen leave-one-photo-out (never tuned on the photo being scored).
+
+| Configuration | Attendance F1 | Students named correctly | Strangers given a student's name |
+|---|---|---|---|
+| Pretrained baseline (SCRFD + ArcFace R50) | 0.954 | 114 / 117 | 32 |
+| + tiled detection | 0.954 | 114 / 117 | 15 |
+| + degradation-aware enrollment | 0.966 | 115 / 117 | 15 |
+| **+ one-to-one assignment (deployed)** | **0.966** | **115 / 117** | **6** |
+
+Also evaluated on LFW (99.8 % verification), TinyFace (open-set identification on 20-pixel faces) and an Indian classroom sample from IIT Madras (98.5 % rank-1). Every number is produced by a script in [`experiments/`](experiments) and saved in [`experiments/results/`](experiments/results); the full study is in the [report](paper/quickpic.pdf).
+
+## The app
+
+| Teacher: course insights | Student: guided face registration |
+|---|---|
+| ![Course page](docs/assets/course.png) | ![Face registration](docs/assets/register.png) |
+
+**Teachers** create courses, upload a class photo and review every detected face on a zoomable photo: green = named, amber "?" = unsure, dashed = unknown. They fix names (one face per student is enforced), tick the register and confirm; the photo is then deleted. Course pages show per-lecture and per-student attendance, students below 75 %, and CSV export. Lectures, marks and courses can be edited or deleted, and join codes regenerated.
+
+**Students** sign up, join a course with its six-letter code, and register their face with four guided photos (webcam with countdown, or file upload). Each photo is checked instantly for one face, size, sharpness, lighting and head turn, and the aligned face is shown back. Students see their attendance per lecture, can leave a course, and can delete their face data or account at any time.
+
+## Quick start
+
+Requirements: [uv](https://docs.astral.sh/uv/), Node.js 20+ and [pnpm](https://pnpm.io/). Runs fully offline after setup.
 
 ```bash
-make setup      # Python environment from uv.lock + frontend packages
-make models     # download pretrained weights into models/
-make check      # data guard, lint, engine and API tests
-make web        # build the frontend and serve everything on http://127.0.0.1:8000
+git clone https://github.com/Tanish-237/quickpic && cd quickpic
+make setup     # Python env (uv.lock) + frontend packages
+make models    # download pretrained face models into models/ (checksummed)
+make web       # build the frontend and serve the app on http://127.0.0.1:8000
 ```
 
-Optional demo data: `make demo` creates a teacher (`teacher` / `quickpic-demo`), a course and one student per folder in `data/class/enroll/`. To start over, delete `web/quickpic.sqlite3` and `web/media/`.
+Create accounts in the app (teacher sign-up code: `ipcv-2026`), or seed demo data from a folder of enrollment photos (`data/class/enroll/<student name>/*.jpg`):
 
-For frontend development, run `make api` and `make dev` in two terminals and open http://127.0.0.1:5173.
+```bash
+make demo      # teacher / quickpic-demo, one course, one student per folder (password quickpic-demo)
+```
 
-## Web application
+To start fresh, delete `web/quickpic.sqlite3` and `web/media/`. Run `make help` for every command.
 
-- **Stack:** Django 6 + Django Ninja (JSON API, session auth with CSRF) and SQLite on the backend; React 19, TypeScript, Vite, Tailwind CSS 4 and TanStack Query on the frontend. Django serves the built frontend, so the whole app runs offline from one process.
-- **Students** sign up, join a course by its code, and register their face with four guided photos (webcam or file). Each photo is checked instantly for one face, size, sharpness, light and head turn, and the aligned face is shown back. Only embeddings are stored, and students can delete them.
-- **Teachers** create courses, upload a class photo, and review every detected face on the photo with its proposed name. They reassign or reject faces (one face per student is enforced), adjust the register and confirm. The photo is then deleted. Course pages show per-lecture and per-student attendance, students below 75%, and CSV export. Teachers can edit or delete a lecture (and its attendance), correct individual marks, edit a course, issue a new join code, remove students, or delete a course.
-- **Students** can leave a course; the attendance already recorded stays with the teacher.
-- **Everyone** has a profile page: name and roll number, password change, and account deletion (which removes face data and attendance).
+### Configuration
+
+All optional, set as environment variables:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `QUICKPIC_DEVICE` | `coreml` on Apple silicon, else CPU | `cpu`, `coreml` or `cuda` |
+| `QUICKPIC_TEACHER_CODE` | `ipcv-2026` | Code required to sign up as a teacher |
+| `QUICKPIC_UNSURE_MARGIN` | `0.06` | Flag a name when the runner-up student scored within this margin |
+| `QUICKPIC_SECRET_KEY`, `QUICKPIC_DEBUG` | demo values | Django secret key and debug mode |
+| `QUICKPIC_DB`, `QUICKPIC_MEDIA`, `QUICKPIC_MODELS` | inside the repo | Database file, upload folder, model folder |
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Vision | SCRFD, YuNet, Haar · ArcFace (ResNet-50, MobileFaceNet), SFace, LBP · ONNX Runtime (CPU, CoreML, CUDA) · OpenCV |
+| Decision layer | NumPy, SciPy (Hungarian method), scikit-learn (calibration) |
+| Backend | Django 6, Django Ninja (typed JSON API, session auth + CSRF), SQLite, WhiteNoise |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS 4, TanStack Query, React Router |
+| Tooling | uv, pnpm, Ruff, Prettier, pytest, GitHub Actions, Colab (GPU benchmarks) |
 
 ## Repository layout
 
 ```
-src/quickpic/   recognition engine: importable, typed, tested, no UI code
-experiments/    scripts that produce every number in the paper → experiments/results/*.json
-notebooks/      Colab and exploration notebooks; nothing imports from here
-tools/          local helpers, such as the face labeller that builds the answer key
-web/            Django backend: JSON API over the engine, models, tests
-frontend/       React + TypeScript single-page app
-tests/          unit tests for the engine
-paper/          IEEE paper (LaTeX)
-docs/           design decisions and figures
-data/           local only, never committed
+quickpic/
+├── src/quickpic/          Recognition engine: detection, alignment, embedding, tiling,
+│                          degradation, calibration, assignment, metrics (no UI code)
+├── web/                   Django backend
+│   ├── attendance/
+│   │   ├── api/           JSON API: auth, account, student, courses, sessions
+│   │   ├── engine.py      Bridge to the engine: registration checks, processing, confirmation
+│   │   └── models.py      Users, courses, face embeddings, lectures, attendance
+│   └── config/            Settings and URLs (serves the built frontend)
+├── frontend/              React app
+│   └── src/
+│       ├── components/    UI kit and app shell
+│       ├── lib/           API client, auth context
+│       └── pages/         Landing, auth, profile, student/, teacher/{course,session}/
+├── experiments/           Scripts behind every number in the report → results/*.json
+├── notebooks/             Colab notebooks for the GPU benchmarks
+├── tools/                 Local face-labelling tool that builds the answer key
+├── tests/                 Engine unit tests (API tests live in web/attendance/tests.py)
+├── paper/                 IEEE report (LaTeX + PDF)
+├── docs/                  Design decisions and README screenshots
+└── scripts/               Model download, no-images guard
 ```
 
-## Data and privacy
+The API is documented interactively at `http://127.0.0.1:8000/api/docs` while the app is running.
 
-- No face images are ever committed. `data/` and `models/` are gitignored, and CI fails if an image outside `docs/assets/` is tracked.
-- Experiments on class photos run only on the authors' machine, and only aggregate metrics are reported.
-- The web app keeps face embeddings, not enrollment photos. A class photo is deleted once the teacher confirms the attendance list, and students can delete their stored data.
+## Development
 
-## Licences
+```bash
+make check     # what CI runs: no-images guard, Ruff, Prettier, TypeScript, pytest, API tests
+make format    # auto-format Python and TypeScript
+make api       # Django on :8000   ─┐ run both for a live-reloading
+make dev       # Vite on :5173     ─┘ frontend at http://127.0.0.1:5173
+```
 
-The code in this repository is released under the MIT licence. Pretrained weights are downloaded separately and keep their own terms. The InsightFace models are for **non-commercial research only**. SFace and YuNet are from the OpenCV Zoo, and SFace is Apache-2.0. The public datasets (LFW, TinyFace, the ICFD sample) are used for non-commercial research and are not redistributed.
+Experiments: `uv run python -m experiments.<name> --data data/class` (class-photo studies run locally only); the public benchmarks run on Colab from [`notebooks/`](notebooks).
+
+## Privacy and licences
+
+- No face image is ever committed: `data/` and `models/` are git-ignored, and CI fails if an image outside `docs/assets/` is tracked. The screenshots above use invented students.
+- Class-photo experiments run only on the authors' laptop and report aggregate numbers. Enrolled classmates gave permission; other people in class photos are never identified or published.
+- Code: MIT. The InsightFace models are for **non-commercial research only**; SFace and YuNet (OpenCV Zoo) are Apache-2.0/MIT. LFW, TinyFace and the ICFD sample are used for research and not redistributed.
 
 ## Team 25
 
-Tanish Mittal (20233288) · Shashank Kanaujiya (20233259) · Utkarsh Raj Singh (20233298) · Shinde Ritesh Tirupati (20233350)
+| Member | Contribution |
+|---|---|
+| **Tanish Mittal** (20233288) | Lead: system design, recognition decision layer, class-photo evaluation, report |
+| **Shashank Kanaujiya** (20233259) | Face detection, tiled detection, detector comparison, class-photo labelling |
+| **Utkarsh Raj Singh** (20233298) | Public benchmarks (LFW, TinyFace, ICFD), embedder comparison |
+| **Shinde Ritesh Tirupati** (20233350) | Web application, photo collection, literature survey |
 
-See [docs/decisions.md](docs/decisions.md) for the reasoning behind each design choice.
+Image Processing and Computer Vision, Semester VII, Section D · Motilal Nehru National Institute of Technology Allahabad

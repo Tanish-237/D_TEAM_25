@@ -15,10 +15,10 @@ function AuthFrame({ title, sub, children }: { title: string; sub: ReactNode; ch
         <ThemeToggle />
       </header>
       <main className="grid place-items-center px-4 pb-16">
-        <div className="w-full max-w-sm animate-rise">
+        <div className="animate-rise w-full max-w-sm">
           <div className="mb-8 grid gap-2 text-center">
             <h1 className="text-2xl font-semibold">{title}</h1>
-            <p className="text-sm text-muted">{sub}</p>
+            <p className="text-muted text-sm">{sub}</p>
           </div>
           {children}
         </div>
@@ -30,7 +30,7 @@ function AuthFrame({ title, sub, children }: { title: string; sub: ReactNode; ch
 function ErrorNote({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">
+    <p className="bg-danger-soft text-danger rounded-lg px-3 py-2 text-sm" role="alert">
       {message}
     </p>
   );
@@ -68,7 +68,7 @@ export function Login() {
       sub={
         <>
           New here?{" "}
-          <Link to="/signup" className="font-medium text-ink underline-offset-4 hover:underline">
+          <Link to="/signup" className="text-ink font-medium underline-offset-4 hover:underline">
             Create an account
           </Link>
         </>
@@ -121,13 +121,13 @@ export function Signup() {
       sub={
         <>
           Already registered?{" "}
-          <Link to="/login" className="font-medium text-ink underline-offset-4 hover:underline">
+          <Link to="/login" className="text-ink font-medium underline-offset-4 hover:underline">
             Log in
           </Link>
         </>
       }
     >
-      <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-sunken p-1">
+      <div className="bg-sunken mb-6 grid grid-cols-2 gap-1 rounded-xl p-1">
         {(
           [
             ["student", "Student", GraduationCap],

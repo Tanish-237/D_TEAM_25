@@ -1,4 +1,4 @@
-import { Loader2, X } from "lucide-react";
+import { Loader2, Search, X } from "lucide-react";
 import {
   forwardRef,
   useEffect,
@@ -46,8 +46,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       disabled={disabled || loading}
       className={cx(
         "inline-flex items-center justify-center rounded-lg font-medium whitespace-nowrap",
-        "transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal",
-        "disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
+        "focus-visible:outline-signal transition focus-visible:outline-2 focus-visible:outline-offset-2",
+        "cursor-pointer disabled:pointer-events-none disabled:opacity-50",
         variants[variant],
         sizes[size],
         className,
@@ -74,36 +74,35 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
   const inputId = id ?? rest.name;
   return (
     <label htmlFor={inputId} className={cx("grid gap-1.5", className)}>
-      <span className="text-[13px] font-medium text-ink">{label}</span>
+      <span className="text-ink text-[13px] font-medium">{label}</span>
       <Input ref={ref} id={inputId} {...rest} />
-      {hint && <span className="text-xs text-muted">{hint}</span>}
+      {hint && <span className="text-muted text-xs">{hint}</span>}
     </label>
   );
 });
 
-export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
-  function Input({ className, ...rest }, ref) {
-    return (
-      <input
-        ref={ref}
-        className={cx(
-          "h-10 w-full min-w-0 rounded-lg border border-line bg-surface px-3 text-sm text-ink",
-          "placeholder:text-faint outline-none transition",
-          "focus:border-ink/40 focus:ring-4 focus:ring-ink/5",
-          className,
-        )}
-        {...rest}
-      />
-    );
-  },
-);
+export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input(
+  { className, ...rest },
+  ref,
+) {
+  return (
+    <input
+      ref={ref}
+      className={cx(
+        "border-line bg-surface text-ink h-10 w-full min-w-0 rounded-lg border px-3 text-sm",
+        "placeholder:text-faint transition outline-none",
+        "focus:border-ink/40 focus:ring-ink/5 focus:ring-4",
+        className,
+      )}
+      {...rest}
+    />
+  );
+});
 
 // ---------------------------------------------------------------- Surfaces
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
-  return (
-    <div className={cx("rounded-2xl border border-line bg-surface", className)}>{children}</div>
-  );
+  return <div className={cx("border-line bg-surface rounded-2xl border", className)}>{children}</div>;
 }
 
 export function Badge({
@@ -143,7 +142,7 @@ export function Avatar({ name, size = 36 }: { name: string; size?: number }) {
     .join("");
   return (
     <span
-      className="inline-grid shrink-0 place-items-center rounded-full bg-sunken font-semibold text-muted"
+      className="bg-sunken text-muted inline-grid shrink-0 place-items-center rounded-full font-semibold"
       style={{ width: size, height: size, fontSize: size * 0.36 }}
     >
       {letters}
@@ -151,8 +150,8 @@ export function Avatar({ name, size = 36 }: { name: string; size?: number }) {
   );
 }
 
-export function Spinner({ className }: { className?: string }) {
-  return <Loader2 className={cx("size-5 animate-spin text-faint", className)} />;
+function Spinner({ className }: { className?: string }) {
+  return <Loader2 className={cx("text-faint size-5 animate-spin", className)} />;
 }
 
 export function PageLoader() {
@@ -175,11 +174,11 @@ export function Empty({
   action?: ReactNode;
 }) {
   return (
-    <div className="grid place-items-center gap-3 rounded-2xl border border-dashed border-line px-6 py-12 text-center">
-      <div className="grid size-11 place-items-center rounded-xl bg-sunken text-muted">{icon}</div>
+    <div className="border-line grid place-items-center gap-3 rounded-2xl border border-dashed px-6 py-12 text-center">
+      <div className="bg-sunken text-muted grid size-11 place-items-center rounded-xl">{icon}</div>
       <div className="grid gap-1">
         <p className="font-medium">{title}</p>
-        {children && <p className="max-w-sm text-sm text-muted">{children}</p>}
+        {children && <p className="text-muted max-w-sm text-sm">{children}</p>}
       </div>
       {action}
     </div>
@@ -252,7 +251,7 @@ export function Dialog({
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
       className={cx(
-        "m-auto w-[calc(100%-2rem)] rounded-2xl border border-line bg-surface p-0 text-ink shadow-2xl",
+        "border-line bg-surface text-ink m-auto w-[calc(100%-2rem)] rounded-2xl border p-0 shadow-2xl",
         wide ? "max-w-2xl" : "max-w-md",
       )}
     >
@@ -261,11 +260,11 @@ export function Dialog({
           <div className="flex items-start justify-between gap-4">
             <div className="grid gap-1">
               <h2 className="text-lg font-semibold">{title}</h2>
-              {description && <p className="text-sm text-muted">{description}</p>}
+              {description && <p className="text-muted text-sm">{description}</p>}
             </div>
             <button
               onClick={onClose}
-              className="-m-1 rounded-md p-1 text-muted hover:bg-sunken hover:text-ink"
+              className="text-muted hover:bg-sunken hover:text-ink -m-1 rounded-md p-1"
               aria-label="Close"
             >
               <X className="size-4" />
@@ -278,20 +277,69 @@ export function Dialog({
   );
 }
 
-export function Stat({
-  label,
-  value,
-  sub,
-}: {
-  label: string;
-  value: ReactNode;
-  sub?: ReactNode;
-}) {
+export function Stat({ label, value, sub }: { label: string; value: ReactNode; sub?: ReactNode }) {
   return (
     <div className="grid gap-1">
       <span className="label">{label}</span>
       <span className="num text-2xl font-semibold">{value}</span>
-      {sub && <span className="text-xs text-muted">{sub}</span>}
+      {sub && <span className="text-muted text-xs">{sub}</span>}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------- Confirmation
+
+/** A yes/no dialog for actions that change or delete data. */
+export function ConfirmDialog({
+  open,
+  onClose,
+  title,
+  description,
+  confirmLabel,
+  onConfirm,
+  loading,
+  tone = "danger",
+  cancelLabel = "Cancel",
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  description?: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+  loading?: boolean;
+  tone?: "danger" | "signal" | "primary";
+  cancelLabel?: string;
+}) {
+  return (
+    <Dialog open={open} onClose={onClose} title={title} description={description}>
+      <div className="flex justify-end gap-2">
+        <Button variant="secondary" onClick={onClose}>
+          {cancelLabel}
+        </Button>
+        <Button variant={tone} loading={loading} onClick={onConfirm}>
+          {confirmLabel}
+        </Button>
+      </div>
+    </Dialog>
+  );
+}
+
+// ---------------------------------------------------------------- Search
+
+export function SearchInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="relative">
+      <Search className="text-faint pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+      <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="pl-9" />
     </div>
   );
 }

@@ -189,4 +189,3 @@ export function formatDate(iso: string, style: "short" | "long" = "short"): stri
     ...(style === "long" ? { year: "numeric", weekday: "short" } : {}),
   });
 }
-

@@ -42,23 +42,28 @@ const SEATS: Seat[] = ROWS.flatMap((row) =>
 
 function ClassroomIllustration() {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_30px_80px_-40px_rgb(0_0_0/0.35)]">
-      <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
-        <div className="flex items-center gap-2 text-xs text-muted">
+    <div className="border-line bg-surface relative overflow-hidden rounded-2xl border shadow-[0_30px_80px_-40px_rgb(0_0_0/0.35)]">
+      <div className="border-line flex items-center justify-between border-b px-4 py-2.5">
+        <div className="text-muted flex items-center gap-2 text-xs">
           <Camera className="size-3.5" />
           <span className="num">IMG_8694.HEIC</span>
         </div>
         <div className="flex items-center gap-3 text-[11px]">
-          <span className="flex items-center gap-1.5 text-signal">
+          <span className="text-signal flex items-center gap-1.5">
             <span className="size-2 rounded-[2px] border-2 border-current" /> enrolled
           </span>
-          <span className="flex items-center gap-1.5 text-faint">
+          <span className="text-faint flex items-center gap-1.5">
             <span className="size-2 rounded-[2px] border-2 border-dashed border-current" /> unknown
           </span>
         </div>
       </div>
       <div className="relative">
-        <svg viewBox="0 0 560 345" className="block w-full" role="img" aria-label="Illustration of a class photo with detected faces">
+        <svg
+          viewBox="0 0 560 345"
+          className="block w-full"
+          role="img"
+          aria-label="Illustration of a class photo with detected faces"
+        >
           <defs>
             <linearGradient id="floor" x1="0" x2="0" y1="0" y2="1">
               <stop offset="0" className="[stop-color:var(--sunken)]" />
@@ -93,10 +98,7 @@ function ClassroomIllustration() {
                   opacity={0.35}
                 />
                 <circle cx={seat.x} cy={seat.y} r={r} className="fill-faint" opacity={0.55} />
-                <g
-                  className="animate-rise"
-                  style={{ animationDelay: `${delay}s` }}
-                >
+                <g className="animate-rise" style={{ animationDelay: `${delay}s` }}>
                   <rect
                     x={box.x}
                     y={box.y}
@@ -134,10 +136,10 @@ function ClassroomIllustration() {
           })}
         </svg>
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="h-1/2 w-full animate-scan bg-gradient-to-b from-transparent via-signal/10 to-transparent" />
+          <div className="animate-scan via-signal/10 h-1/2 w-full bg-gradient-to-b from-transparent to-transparent" />
         </div>
       </div>
-      <div className="grid grid-cols-3 divide-x divide-line border-t border-line text-center">
+      <div className="divide-line border-line grid grid-cols-3 divide-x border-t text-center">
         {[
           ["32", "faces found"],
           ["6", "students named"],
@@ -145,7 +147,7 @@ function ClassroomIllustration() {
         ].map(([n, label]) => (
           <div key={label} className="py-3">
             <div className="num text-lg font-semibold">{n}</div>
-            <div className="text-[11px] text-muted">{label}</div>
+            <div className="text-muted text-[11px]">{label}</div>
           </div>
         ))}
       </div>
@@ -194,15 +196,23 @@ export default function Landing() {
     <div className="min-h-dvh">
       <header className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
         <Logo />
-        <nav className="hidden items-center gap-6 text-sm text-muted md:flex">
-          <a href="#how" className="hover:text-ink">How it works</a>
-          <a href="#results" className="hover:text-ink">Results</a>
-          <a href="#privacy" className="hover:text-ink">Privacy</a>
+        <nav className="text-muted hidden items-center gap-6 text-sm md:flex">
+          <a href="#how" className="hover:text-ink">
+            How it works
+          </a>
+          <a href="#results" className="hover:text-ink">
+            Results
+          </a>
+          <a href="#privacy" className="hover:text-ink">
+            Privacy
+          </a>
         </nav>
         <div className="ml-auto flex items-center gap-2">
           <ThemeToggle />
           <Link to="/login" className="hidden sm:block">
-            <Button variant="ghost" size="sm">Log in</Button>
+            <Button variant="ghost" size="sm">
+              Log in
+            </Button>
           </Link>
           <Link to="/signup">
             <Button size="sm">Get started</Button>
@@ -212,19 +222,18 @@ export default function Landing() {
 
       {/* hero */}
       <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 pt-10 pb-20 sm:px-6 lg:grid-cols-[1fr_1.1fr] lg:pt-16">
-        <div className="grid gap-6 animate-rise">
+        <div className="animate-rise grid gap-6">
           <span className="label flex items-center gap-2">
-            <span className="size-1.5 rounded-full bg-signal" /> Face recognition attendance
+            <span className="bg-signal size-1.5 rounded-full" /> Face recognition attendance
           </span>
-          <h1 className="text-4xl font-semibold leading-[1.05] sm:text-5xl lg:text-[56px]">
+          <h1 className="text-4xl leading-[1.05] font-semibold sm:text-5xl lg:text-[56px]">
             One photo.
             <br />
             <span className="text-muted">The whole register.</span>
           </h1>
-          <p className="max-w-md text-[17px] leading-relaxed text-muted">
-            Take a single photograph of the lecture hall. QuickPic finds every face, recognises the
-            students enrolled in your course, and leaves everyone else as unknown. You review the
-            list and confirm.
+          <p className="text-muted max-w-md text-[17px] leading-relaxed">
+            Take a single photograph of the lecture hall. QuickPic finds every face, recognises the students enrolled in
+            your course, and leaves everyone else as unknown. You review the list and confirm.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link to="/signup">
@@ -245,7 +254,7 @@ export default function Landing() {
       </section>
 
       {/* results */}
-      <section id="results" className="border-y border-line bg-surface">
+      <section id="results" className="border-line bg-surface border-y">
         <div className="mx-auto grid max-w-6xl grid-cols-2 gap-y-8 px-4 py-10 sm:px-6 md:grid-cols-4">
           {[
             ["115/117", "students named correctly", "15 enrolled, 10 real class photos"],
@@ -253,10 +262,10 @@ export default function Landing() {
             ["32 → 6", "strangers misnamed", "baseline vs. QuickPic"],
             ["< 1 s", "per class photo", "~90 faces, laptop GPU"],
           ].map(([value, label, sub]) => (
-            <div key={label} className="grid gap-1 border-l border-line pl-5">
+            <div key={label} className="border-line grid gap-1 border-l pl-5">
               <span className="num text-3xl font-semibold tracking-tight">{value}</span>
               <span className="text-sm font-medium">{label}</span>
-              <span className="text-xs text-muted">{sub}</span>
+              <span className="text-muted text-xs">{sub}</span>
             </div>
           ))}
         </div>
@@ -268,17 +277,17 @@ export default function Landing() {
           <span className="label">How it works</span>
           <h2 className="text-3xl font-semibold">Frozen networks, a classroom-aware decision layer</h2>
           <p className="text-muted">
-            The detector and recogniser are pretrained and never retrained. What we built is the
-            layer between them and the register, marked <span className="font-medium text-signal">ours</span>.
+            The detector and recogniser are pretrained and never retrained. What we built is the layer between them and
+            the register, marked <span className="text-signal font-medium">ours</span>.
           </p>
         </div>
-        <ol className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
+        <ol className="border-line bg-line grid gap-px overflow-hidden rounded-2xl border sm:grid-cols-2 lg:grid-cols-5">
           {STEPS.map((step, i) => (
-            <li key={step.title} className="grid content-start gap-4 bg-surface p-6">
+            <li key={step.title} className="bg-surface grid content-start gap-4 p-6">
               <div className="flex items-center justify-between">
-                <span className="num text-xs text-faint">0{i + 1}</span>
+                <span className="num text-faint text-xs">0{i + 1}</span>
                 {step.ours && (
-                  <span className="rounded-full border border-signal/30 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-signal uppercase">
+                  <span className="border-signal/30 text-signal rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
                     ours
                   </span>
                 )}
@@ -286,7 +295,7 @@ export default function Landing() {
               <step.icon className={cx("size-6", step.ours ? "text-signal" : "text-ink")} strokeWidth={1.6} />
               <div className="grid gap-2">
                 <h3 className="font-semibold">{step.title}</h3>
-                <p className="text-sm leading-relaxed text-muted">{step.body}</p>
+                <p className="text-muted text-sm leading-relaxed">{step.body}</p>
               </div>
             </li>
           ))}
@@ -295,20 +304,20 @@ export default function Landing() {
 
       {/* roles */}
       <section className="mx-auto grid max-w-6xl gap-4 px-4 pb-24 sm:px-6 md:grid-cols-2">
-        <div className="grid gap-4 rounded-2xl border border-line bg-surface p-8">
+        <div className="border-line bg-surface grid gap-4 rounded-2xl border p-8">
           <Users className="size-6" strokeWidth={1.6} />
           <h3 className="text-xl font-semibold">For teachers</h3>
-          <ul className="grid gap-2 text-sm text-muted">
+          <ul className="text-muted grid gap-2 text-sm">
             <li>Create a course; students join with its six-letter code.</li>
             <li>Upload the class photo; get a pre-ticked register in seconds.</li>
             <li>Every face is shown on the photo with its proposed name.</li>
             <li>Per-student percentages, session history and CSV export.</li>
           </ul>
         </div>
-        <div className="grid gap-4 rounded-2xl border border-line bg-surface p-8">
+        <div className="border-line bg-surface grid gap-4 rounded-2xl border p-8">
           <ScanFace className="size-6" strokeWidth={1.6} />
           <h3 className="text-xl font-semibold">For students</h3>
-          <ul className="grid gap-2 text-sm text-muted">
+          <ul className="text-muted grid gap-2 text-sm">
             <li>Register your face with four guided photos, from the webcam or files.</li>
             <li>Each photo is checked instantly: size, sharpness, light and head turn.</li>
             <li>See your attendance in every course, lecture by lecture.</li>
@@ -318,7 +327,7 @@ export default function Landing() {
       </section>
 
       {/* privacy */}
-      <section id="privacy" className="border-t border-line bg-surface">
+      <section id="privacy" className="border-line bg-surface border-t">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[1fr_2fr]">
           <div className="grid content-start gap-3">
             <span className="label">Privacy by design</span>
@@ -326,16 +335,24 @@ export default function Landing() {
           </div>
           <div className="grid gap-6 sm:grid-cols-3">
             {[
-              [ShieldCheck, "No enrollment photos kept", "Registration photos are turned into embeddings in memory and discarded."],
+              [
+                ShieldCheck,
+                "No enrollment photos kept",
+                "Registration photos are turned into embeddings in memory and discarded.",
+              ],
               [Trash2, "Class photo deleted", "The photo and face crops are deleted the moment the teacher confirms."],
-              [Camera, "Runs on one laptop", "No cloud service. Everything, including the models, runs locally on CPU."],
+              [
+                Camera,
+                "Runs on one laptop",
+                "No cloud service. Everything, including the models, runs locally on CPU.",
+              ],
             ].map(([Icon, title, body]) => {
               const I = Icon as typeof ShieldCheck;
               return (
                 <div key={title as string} className="grid content-start gap-2">
-                  <I className="size-5 text-signal" strokeWidth={1.8} />
+                  <I className="text-signal size-5" strokeWidth={1.8} />
                   <h3 className="font-medium">{title as string}</h3>
-                  <p className="text-sm leading-relaxed text-muted">{body as string}</p>
+                  <p className="text-muted text-sm leading-relaxed">{body as string}</p>
                 </div>
               );
             })}
@@ -343,10 +360,8 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-10 text-xs text-muted sm:px-6">
-        <span>
-          IPCV · Semester VII · Team 25 · MNNIT Allahabad
-        </span>
+      <footer className="text-muted mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-10 text-xs sm:px-6">
+        <span>IPCV · Semester VII · Team 25 · MNNIT Allahabad</span>
         <span>Tanish Mittal · Shashank Kanaujiya · Utkarsh Raj Singh · Shinde Ritesh Tirupati</span>
       </footer>
     </div>

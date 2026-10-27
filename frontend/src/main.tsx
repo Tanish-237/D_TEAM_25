@@ -13,9 +13,9 @@ import Landing from "./pages/Landing";
 import Profile from "./pages/Profile";
 import StudentDashboard from "./pages/student/Dashboard";
 import RegisterFace from "./pages/student/RegisterFace";
-import Course from "./pages/teacher/Course";
+import CoursePage from "./pages/teacher/course/CoursePage";
 import TeacherDashboard from "./pages/teacher/Dashboard";
-import Session from "./pages/teacher/Session";
+import SessionPage from "./pages/teacher/session/SessionPage";
 
 const client = new QueryClient({
   defaultOptions: {
@@ -30,7 +30,7 @@ function NotFound() {
   return (
     <div className="grid min-h-dvh place-items-center px-4 text-center">
       <div className="grid justify-items-center gap-4">
-        <span className="num text-6xl font-semibold text-faint">404</span>
+        <span className="num text-faint text-6xl font-semibold">404</span>
         <p className="text-muted">This page does not exist.</p>
         <Link to="/">
           <Button variant="secondary">Go home</Button>
@@ -58,8 +58,8 @@ createRoot(document.getElementById("root")!).render(
             </Route>
             <Route path="/teacher" element={<AppShell role="teacher" />}>
               <Route index element={<TeacherDashboard />} />
-              <Route path="courses/:id" element={<Course />} />
-              <Route path="sessions/:id" element={<Session />} />
+              <Route path="courses/:id" element={<CoursePage />} />
+              <Route path="sessions/:id" element={<SessionPage />} />
               <Route path="profile" element={<Profile />} />
             </Route>
             <Route path="*" element={<NotFound />} />

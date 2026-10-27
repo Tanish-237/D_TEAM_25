@@ -33,7 +33,13 @@ function PoseGlyph({ step }: { step: string }) {
       <ellipse cx="32" cy="30" rx="15" ry="18" className="fill-sunken stroke-line" strokeWidth="1.5" />
       <circle cx={26 + turn * 5} cy="27" r="1.8" className="fill-ink" />
       <circle cx={38 + turn * 5} cy="27" r="1.8" className="fill-ink" />
-      <path d={`M${32 + turn * 7} 30 l${turn * 2} 6 h${-3 - turn}`} className="stroke-ink" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <path
+        d={`M${32 + turn * 7} 30 l${turn * 2} 6 h${-3 - turn}`}
+        className="stroke-ink"
+        strokeWidth="1.5"
+        fill="none"
+        strokeLinecap="round"
+      />
       {step === "light" && (
         <g className="stroke-warn" strokeWidth="2" strokeLinecap="round">
           <path d="M54 8v5M60 14h-5M58 9l-3 3" />
@@ -96,8 +102,8 @@ function CameraCapture({ onCapture }: { onCapture: (blob: Blob) => void }) {
 
   if (state === "denied") {
     return (
-      <div className="grid aspect-[4/3] place-items-center rounded-xl bg-sunken p-6 text-center">
-        <div className="grid justify-items-center gap-2 text-sm text-muted">
+      <div className="bg-sunken grid aspect-[4/3] place-items-center rounded-xl p-6 text-center">
+        <div className="text-muted grid justify-items-center gap-2 text-sm">
           <CameraOff className="size-6" />
           Camera not available. Upload a photo instead.
         </div>
@@ -187,7 +193,12 @@ export default function RegisterFace() {
     } catch (e) {
       setShots((prev) => ({
         ...prev,
-        [key]: { blob, url, check: { ok: false, message: (e as Error).message, yaw: 0, preview: null }, checking: false },
+        [key]: {
+          blob,
+          url,
+          check: { ok: false, message: (e as Error).message, yaw: 0, preview: null },
+          checking: false,
+        },
       }));
     }
   };
@@ -212,13 +223,13 @@ export default function RegisterFace() {
           </Link>
         }
       >
-        Each photo is checked for one clear face, size, sharpness, light and head turn. Only a numeric
-        signature is saved; the photos are discarded.
+        Each photo is checked for one clear face, size, sharpness, light and head turn. Only a numeric signature is
+        saved; the photos are discarded.
       </PageHeader>
 
       <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
         {/* stepper */}
-        <ol className="grid content-start gap-1 animate-rise">
+        <ol className="animate-rise grid content-start gap-1">
           {steps.map((s, i) => {
             const st = shots[s.key];
             const status = st?.checking ? "checking" : st?.check?.ok ? "ok" : st?.check ? "fail" : "todo";
@@ -228,7 +239,7 @@ export default function RegisterFace() {
                   onClick={() => setCurrent(i)}
                   className={cx(
                     "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition",
-                    i === current ? "bg-surface shadow-sm ring-1 ring-line" : "hover:bg-sunken",
+                    i === current ? "bg-surface ring-line shadow-sm ring-1" : "hover:bg-sunken",
                   )}
                 >
                   <span
@@ -252,8 +263,14 @@ export default function RegisterFace() {
                   </span>
                   <span className="grid min-w-0">
                     <span className="truncate text-sm font-medium">{s.title}</span>
-                    <span className="text-xs text-muted">
-                      {status === "ok" ? "Accepted" : status === "fail" ? "Needs a retake" : status === "checking" ? "Checking…" : "Not taken"}
+                    <span className="text-muted text-xs">
+                      {status === "ok"
+                        ? "Accepted"
+                        : status === "fail"
+                          ? "Needs a retake"
+                          : status === "checking"
+                            ? "Checking…"
+                            : "Not taken"}
                     </span>
                   </span>
                 </button>
@@ -271,12 +288,12 @@ export default function RegisterFace() {
             >
               Save my face
             </Button>
-            {!allOk && <p className="mt-2 text-center text-xs text-muted">All four photos must be accepted.</p>}
+            {!allOk && <p className="text-muted mt-2 text-center text-xs">All four photos must be accepted.</p>}
           </li>
         </ol>
 
         {/* current step */}
-        <Card key={step.key} className="grid gap-6 p-6 animate-rise">
+        <Card key={step.key} className="animate-rise grid gap-6 p-6">
           <div className="flex items-center gap-4">
             <PoseGlyph step={step.key} />
             <div className="grid gap-1">
@@ -284,18 +301,21 @@ export default function RegisterFace() {
                 Step {current + 1} of {steps.length}
               </span>
               <h2 className="text-lg font-semibold">{step.title}</h2>
-              <p className="text-sm text-muted">{step.instruction}</p>
+              <p className="text-muted text-sm">{step.instruction}</p>
             </div>
           </div>
 
           {!shot ? (
             <div className="grid gap-4">
-              <div className="flex gap-1 justify-self-start rounded-lg bg-sunken p-1 text-sm">
+              <div className="bg-sunken flex gap-1 justify-self-start rounded-lg p-1 text-sm">
                 {(["camera", "upload"] as const).map((m) => (
                   <button
                     key={m}
                     onClick={() => setMode(m)}
-                    className={cx("rounded-md px-3 py-1", mode === m ? "bg-surface font-medium shadow-sm" : "text-muted")}
+                    className={cx(
+                      "rounded-md px-3 py-1",
+                      mode === m ? "bg-surface font-medium shadow-sm" : "text-muted",
+                    )}
                   >
                     {m === "camera" ? "Webcam" : "Upload file"}
                   </button>
@@ -308,7 +328,7 @@ export default function RegisterFace() {
               ) : (
                 <button
                   onClick={() => fileInput.current?.click()}
-                  className="grid aspect-[4/3] w-full max-w-xl place-items-center rounded-xl border-2 border-dashed border-line text-muted transition hover:border-ink/30 hover:text-ink"
+                  className="border-line text-muted hover:border-ink/30 hover:text-ink grid aspect-[4/3] w-full max-w-xl place-items-center rounded-xl border-2 border-dashed transition"
                 >
                   <span className="grid justify-items-center gap-2 text-sm">
                     <Upload className="size-6" />
@@ -331,26 +351,26 @@ export default function RegisterFace() {
           ) : (
             <div className="grid gap-5">
               <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
-                <div className="relative overflow-hidden rounded-xl bg-sunken">
+                <div className="bg-sunken relative overflow-hidden rounded-xl">
                   <img src={shot.url} alt="" className="aspect-[4/3] max-h-[420px] w-full object-cover" />
                   {shot.checking && (
                     <div className="absolute inset-0 overflow-hidden bg-black/20">
-                      <div className="h-1/2 w-full animate-scan bg-gradient-to-b from-transparent via-white/30 to-transparent" />
+                      <div className="animate-scan h-1/2 w-full bg-gradient-to-b from-transparent via-white/30 to-transparent" />
                     </div>
                   )}
                 </div>
                 <div className="grid content-start justify-items-center gap-2">
                   <span className="label">What we see</span>
-                  <div className="brackets grid size-28 place-items-center rounded-md bg-sunken p-1.5 text-signal">
+                  <div className="brackets bg-sunken text-signal grid size-28 place-items-center rounded-md p-1.5">
                     {shot.check?.preview ? (
                       <img src={shot.check.preview} alt="Aligned face" className="size-full rounded" />
                     ) : shot.checking ? (
-                      <Loader2 className="size-5 animate-spin text-faint" />
+                      <Loader2 className="text-faint size-5 animate-spin" />
                     ) : (
-                      <CircleAlert className="size-5 text-faint" />
+                      <CircleAlert className="text-faint size-5" />
                     )}
                   </div>
-                  <span className="text-center text-[11px] text-muted">
+                  <span className="text-muted text-center text-[11px]">
                     aligned 112×112
                     {shot.check && shot.check.preview && (
                       <>
@@ -373,7 +393,12 @@ export default function RegisterFace() {
                 </div>
               )}
               <div className="flex flex-wrap justify-between gap-2">
-                <Button variant="secondary" icon={<RotateCcw className="size-4" />} onClick={retake} disabled={shot.checking}>
+                <Button
+                  variant="secondary"
+                  icon={<RotateCcw className="size-4" />}
+                  onClick={retake}
+                  disabled={shot.checking}
+                >
                   Retake
                 </Button>
                 {current < steps.length - 1 && (
