@@ -89,7 +89,7 @@ assigns each face to its best-scoring student if that score exceeds a global thr
 Detectors resize the whole photo to a fixed input such as $640\times640$. In a 4032-pixel phone photo a 40-pixel face shrinks to about 6 pixels and is lost. We run the detector on overlapping $1280\times1280$ tiles (25\% overlap) at native resolution plus one pass over the full image, drop boxes cut by an inner tile edge, and merge the rest with non-maximum suppression at IoU 0.4.
 
 \subsection{Degradation-aware enrollment (D)}
-Enrollment photos are sharp and close-up, while classroom faces are small, blurred and badly lit. We enlarge each gallery with synthetic copies $T_k(x)$ of every enrollment photo $x\in E_j$: downscaling to 16--48 pixels and back, Gaussian blur, gamma shifts, JPEG compression and horizontal flips ($K=10$),
+Enrollment photos are sharp and close-up, while classroom faces are small, blurred and badly lit. We enlarge each gallery with synthetic copies $T_k(x)$ of every enrollment photo $x\in E_j$: downscaling to 24--48 pixels and back, Gaussian blur, gamma shifts, JPEG compression and horizontal flips ($K=10$),
 \begin{equation}
 G_j = \{\, \phi(T_k(x)) : x \in E_j,\ k=0,\dots,K \,\}.
 \end{equation}
