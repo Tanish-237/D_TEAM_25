@@ -31,6 +31,9 @@ def normalise(vectors: np.ndarray) -> np.ndarray:
     return vectors / np.maximum(norms, 1e-12)
 
 
+GPU_BATCH = 32
+
+
 class ArcFaceEmbedder:
     """ArcFace-trained CNN (Deng et al., CVPR 2019), 512-dimensional."""
 
@@ -40,11 +43,21 @@ class ArcFaceEmbedder:
         providers = providers or ["CPUExecutionProvider"]
         self.model = get_model(str(model_path), providers=providers)
         self.model.prepare(device_id(providers))
+        self.accelerated = device_id(providers) == 0
 
     def embed(self, crops: list[np.ndarray]) -> np.ndarray:
         if not crops:
             return np.empty((0, self.dim), dtype=np.float32)
-        return normalise(self.model.get_feat(crops))
+        if not self.accelerated:
+            return normalise(self.model.get_feat(crops))
+        # GPU backends such as CoreML compile one network per input shape, so faces are sent
+        # in fixed-size batches (the last one padded) instead of one batch per photo size.
+        vectors = []
+        for start in range(0, len(crops), GPU_BATCH):
+            chunk = crops[start : start + GPU_BATCH]
+            padded = chunk + [chunk[0]] * (GPU_BATCH - len(chunk))
+            vectors.append(self.model.get_feat(padded)[: len(chunk)])
+        return normalise(np.vstack(vectors))
 
 
 class SFaceEmbedder:

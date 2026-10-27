@@ -11,9 +11,15 @@ MODELS_DIR = Path(os.environ.get("QUICKPIC_MODELS", Path(__file__).resolve().par
 
 # QUICKPIC_DEVICE=cuda on an NVIDIA GPU such as Colab, coreml on an Apple-silicon Mac;
 # the default is CPU only.
+# CoreML compiles each network for the GPU on first use (about 25 s); the compiled
+# networks are cached on disk so later server starts skip that step.
+COREML_CACHE = MODELS_DIR / "coreml-cache"
 PROVIDERS = {
     "cuda": ["CUDAExecutionProvider", "CPUExecutionProvider"],
-    "coreml": ["CoreMLExecutionProvider", "CPUExecutionProvider"],
+    "coreml": [
+        ("CoreMLExecutionProvider", {"ModelCacheDirectory": str(COREML_CACHE)}),
+        "CPUExecutionProvider",
+    ],
 }.get(os.environ.get("QUICKPIC_DEVICE", ""), ["CPUExecutionProvider"])
 
 DETECTORS = ("scrfd_10g", "scrfd_500m", "yunet", "haar")

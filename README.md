@@ -17,7 +17,7 @@ On 10 real class photographs (804 hand-labelled faces, 117 appearances of 15 enr
 | + degradation-aware enrollment | 0.966 | 15 |
 | **+ one-to-one assignment (deployed)** | **0.966** | **6** |
 
-The deployed system names 115 of 117 student appearances correctly, and tiling raises detection recall from 0.879 to 0.974. A 4032×3024 photo with 88 faces takes 6.3 s on a laptop CPU, or under a second for detection and embedding on an Apple M2 GPU (used automatically by the web app). All numbers come from `experiments/results/*.json`.
+The deployed system names 115 of 117 student appearances correctly, and tiling raises detection recall from 0.879 to 0.974. A 4032×3024 photo with 88 faces takes 6.3 s on a laptop CPU, or under a second for detection and embedding on an Apple M2 GPU (used automatically by the web app; start it with `QUICKPIC_DEVICE=cpu make web` to use the CPU). The first photo after installing compiles the networks for the GPU once (about 10–25 s); the result is cached in `models/coreml-cache/`. All numbers come from `experiments/results/*.json`.
 
 ## How it works
 
