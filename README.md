@@ -162,7 +162,7 @@ Experiments: `uv run python -m experiments.<name> --data data/class` (class-phot
 | Member | Contribution |
 |---|---|
 | **Tanish Mittal** (20233288) | Lead: system design, recognition engine and decision layer, web app architecture (API, review screen), GPU acceleration, class-photo evaluation, report |
-| **Shashank Kanaujiya** (20233259) | Face detection, tiled detection, detector comparison, class-photo labelling |
+| **Shashank Kanaujiya** (20233259) | Face detection, tiled detection, detector comparison, labelling tool and ground truth, alignment and image-quality checks |
 | **Utkarsh Raj Singh** (20233298) | Datasets and evaluation protocol, public benchmarks (LFW, TinyFace, ICFD), face-model comparison, calibration study |
 | **Shinde Ritesh Tirupati** (20233350) | Web app pages (sign-up, guided registration, dashboards), testing, photo collection, literature survey |
 
