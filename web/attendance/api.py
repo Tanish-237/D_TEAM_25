@@ -600,6 +600,7 @@ def session_detail(request, session_id: int):
         "topic": session.topic,
         "status": session.status,
         "seconds": round(session.seconds, 1),
+        "unsure_below": settings.QUICKPIC_UNSURE,
         "photo": {"width": width, "height": height} if session.photo else None,
         "faces": [
             {

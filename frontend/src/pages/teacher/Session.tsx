@@ -35,12 +35,14 @@ function PhotoViewer({
   roster,
   selected,
   onSelect,
+  isUnsure,
 }: {
   session: SessionDetail;
   assign: Assignments;
   roster: Map<number, RosterEntry>;
   selected: number | null;
   onSelect: (index: number) => void;
+  isUnsure: (face: Face) => boolean;
 }) {
   const [zoom, setZoom] = useState(1);
   const [boxes, setBoxes] = useState(true);
@@ -77,6 +79,9 @@ function PhotoViewer({
                 const who = assign[face.index];
                 const isSel = selected === face.index;
                 const named = who != null;
+                const unsure = isUnsure(face);
+                const color = unsure ? "#f59e0b" : "#22c55e";
+                const label = named ? `${roster.get(who!)?.name ?? "Left course"}${unsure ? "?" : ""}` : "Unknown";
                 return (
                   <g
                     key={face.index}
@@ -94,7 +99,7 @@ function PhotoViewer({
                       height={y2 - y1}
                       rx={stroke * 2}
                       fill={isSel ? "rgb(255 255 255 / 0.12)" : "none"}
-                      stroke={named ? "#22c55e" : "rgb(255 255 255 / 0.7)"}
+                      stroke={named ? color : "rgb(255 255 255 / 0.7)"}
                       strokeWidth={stroke * (isSel ? 3.5 : named ? 2.2 : 1.2)}
                       strokeDasharray={named ? undefined : `${stroke * 4} ${stroke * 3}`}
                     />
@@ -103,13 +108,13 @@ function PhotoViewer({
                         <rect
                           x={x1}
                           y={y1 - stroke * 16}
-                          width={Math.max((named ? roster.get(who!)?.name.length ?? 7 : 7) * stroke * 7 + stroke * 10, x2 - x1)}
+                          width={Math.max(label.length * stroke * 7 + stroke * 10, x2 - x1)}
                           height={stroke * 14}
                           rx={stroke * 2}
-                          fill={named ? "#22c55e" : "rgb(24 24 27 / 0.85)"}
+                          fill={named ? color : "rgb(24 24 27 / 0.85)"}
                         />
                         <text x={x1 + stroke * 5} y={y1 - stroke * 5.5} fontSize={stroke * 10.5} fontWeight={600} fill={named ? "#052e16" : "white"} fontFamily="Inter Variable, sans-serif">
-                          {named ? roster.get(who!)?.name : "Unknown"}
+                          {label}
                         </text>
                       </g>
                     )}
@@ -132,12 +137,16 @@ function FacePanel({
   assign,
   roster,
   onAssign,
+  unsure,
+  onAccept,
 }: {
   session: SessionDetail;
   face: Face;
   assign: Assignments;
   roster: RosterEntry[];
   onAssign: (index: number, student: number | null) => void;
+  unsure: boolean;
+  onAccept: (index: number) => void;
 }) {
   const [query, setQuery] = useState("");
   const current = assign[face.index] ?? null;
@@ -163,6 +172,16 @@ function FacePanel({
           </span>
         </div>
       </div>
+      {unsure && current != null && (
+        <div className="grid gap-2 rounded-xl bg-warn-soft px-3 py-2.5 text-sm text-warn">
+          <span>
+            <span className="font-medium">Not sure.</span> The match is weak, so please check this face.
+          </span>
+          <Button size="sm" variant="secondary" icon={<Check className="size-3.5" />} onClick={() => onAccept(face.index)}>
+            Yes, this is {roster.find((s) => s.id === current)?.first_name || "them"}
+          </Button>
+        </div>
+      )}
       <Button variant={current == null ? "secondary" : "danger"} size="sm" icon={<UserX className="size-3.5" />} disabled={current == null} onClick={() => onAssign(face.index, null)}>
         Not a student · mark unknown
       </Button>
@@ -286,6 +305,7 @@ function Review({ session }: { session: SessionDetail }) {
     () => new Set(session.faces.map((f) => f.proposed).filter((p): p is number => p != null)),
   );
   const [selected, setSelected] = useState<number | null>(null);
+  const [checked, setChecked] = useState<Set<number>>(() => new Set());
   const [panel, setPanel] = useState<"register" | "face">("register");
   const [filter, setFilter] = useState<"all" | "named" | "unknown">("all");
   const [confirming, setConfirming] = useState(false);
@@ -299,6 +319,14 @@ function Review({ session }: { session: SessionDetail }) {
   }, [assign]);
 
   const named = Object.values(assign).filter((v) => v != null).length;
+  // A name the system proposed with a weak score, which the teacher has not yet confirmed or changed.
+  const isUnsure = (face: Face) =>
+    assign[face.index] != null &&
+    assign[face.index] === face.proposed &&
+    face.score < session.unsure_below &&
+    !checked.has(face.index);
+  const unsureFaces = session.faces.filter(isUnsure);
+  const accept = (index: number) => setChecked((c) => new Set(c).add(index));
   const unknown = session.faces.length - named;
 
   const select = (index: number) => {
@@ -307,6 +335,7 @@ function Review({ session }: { session: SessionDetail }) {
   };
 
   const onAssign = (index: number, student: number | null) => {
+    accept(index);
     const before = assign[index];
     const next = { ...assign };
     // One face per student: taking a student off another face leaves that face unknown.
@@ -379,7 +408,22 @@ function Review({ session }: { session: SessionDetail }) {
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]" ref={viewer}>
         <div className="min-w-0 animate-rise [animation-delay:60ms]">
           {session.photo && (
-            <PhotoViewer session={session} assign={assign} roster={rosterById} selected={selected} onSelect={select} />
+            <>
+              {unsureFaces.length > 0 && (
+                <button
+                  onClick={() => select(unsureFaces[0]!.index)}
+                  className="mb-3 flex w-full items-center gap-2 rounded-xl border border-warn/30 bg-warn-soft/60 px-4 py-2.5 text-left text-sm text-warn"
+                >
+                  <CircleHelp className="size-4 shrink-0" />
+                  <span>
+                    <span className="font-semibold">{unsureFaces.length}</span> name{unsureFaces.length === 1 ? " is" : "s are"} uncertain (amber with "?").
+                    Check {unsureFaces.length === 1 ? "it" : "each"} before confirming.
+                  </span>
+                  <span className="ml-auto font-medium whitespace-nowrap">Review →</span>
+                </button>
+              )}
+              <PhotoViewer session={session} assign={assign} roster={rosterById} selected={selected} onSelect={select} isUnsure={isUnsure} />
+            </>
           )}
         </div>
         <Card className="grid content-start gap-4 self-start p-5 lg:sticky lg:top-20 animate-rise [animation-delay:120ms]">
@@ -401,7 +445,15 @@ function Review({ session }: { session: SessionDetail }) {
               onSetAll={(ids) => setPresent(new Set(ids))}
             />
           ) : selectedFace ? (
-            <FacePanel session={session} face={selectedFace} assign={assign} roster={session.roster} onAssign={onAssign} />
+            <FacePanel
+              session={session}
+              face={selectedFace}
+              assign={assign}
+              roster={session.roster}
+              onAssign={onAssign}
+              unsure={isUnsure(selectedFace)}
+              onAccept={accept}
+            />
           ) : (
             <p className="py-10 text-center text-sm text-muted">Click a face on the photo or below.</p>
           )}
@@ -438,12 +490,23 @@ function Review({ session }: { session: SessionDetail }) {
                 }}
                 className={cx(
                   "group grid gap-1 rounded-xl border bg-surface p-1.5 text-left transition hover:border-ink/30",
-                  selected === f.index ? "border-ink ring-2 ring-ink/10" : who != null ? "border-signal/50" : "border-line",
+                  selected === f.index
+                    ? "border-ink ring-2 ring-ink/10"
+                    : isUnsure(f)
+                      ? "border-warn/60"
+                      : who != null
+                        ? "border-signal/50"
+                        : "border-line",
                 )}
               >
                 <img src={faceUrl(session.id, f.index)} alt="" loading="lazy" className="aspect-square w-full rounded-lg object-cover" />
-                <span className={cx("truncate px-0.5 text-[11px]", who != null ? "font-medium text-signal" : "text-faint")}>
-                  {who != null ? rosterById.get(who)?.name : `#${f.index + 1} unknown`}
+                <span
+                  className={cx(
+                    "truncate px-0.5 text-[11px]",
+                    isUnsure(f) ? "font-medium text-warn" : who != null ? "font-medium text-signal" : "text-faint",
+                  )}
+                >
+                  {who != null ? `${rosterById.get(who)?.name}${isUnsure(f) ? "?" : ""}` : `#${f.index + 1} unknown`}
                 </span>
               </button>
             );

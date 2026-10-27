@@ -158,6 +158,7 @@ export interface SessionDetail {
   topic: string;
   status: "draft" | "confirmed";
   seconds: number;
+  unsure_below: number;
   photo: { width: number; height: number } | null;
   faces: Face[];
   roster: RosterEntry[];
