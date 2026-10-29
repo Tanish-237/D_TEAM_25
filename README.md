@@ -6,16 +6,29 @@
 
 Classroom attendance from a single photograph: QuickPic finds every face, names the enrolled students, leaves everyone else as unknown, and hands the teacher a draft register to confirm.
 
-[![CI](https://github.com/Tanish-237/quickpic/actions/workflows/ci.yml/badge.svg)](https://github.com/Tanish-237/quickpic/actions/workflows/ci.yml)
+[![CI](https://github.com/Tanish-237/D_TEAM_25/actions/workflows/ci.yml/badge.svg)](https://github.com/Tanish-237/D_TEAM_25/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)
 ![React 19](https://img.shields.io/badge/react-19-61dafb.svg)
 
-[Report (PDF)](paper/quickpic.pdf) · [Design decisions](docs/decisions.md) · IPCV course project, MNNIT Allahabad
+[Report (PDF)](paper/quickpic.pdf) · [Slides (PDF)](presentation/QuickPic_slides.pdf) · [Dataset](dataset) · [Design decisions](docs/decisions.md)
+
+IPCV course project · Section D · Team 25 · MNNIT Allahabad
 
 ![QuickPic landing page](docs/assets/landing.png)
 
 </div>
+
+## Submission contents
+
+| Required | Where |
+|---|---|
+| Source code | [`src/quickpic/`](src/quickpic) (recognition engine), [`web/`](web) (Django API), [`frontend/`](frontend) (React app), [`experiments/`](experiments), [`tools/`](tools) |
+| Dataset(s) | [`dataset/`](dataset): hand-labelled answer key for our 10 class photos (804 faces), plus sources for LFW, TinyFace and ICFD. No face images are published (see [Privacy](#privacy-and-licences)). |
+| Implementation details | [How it works](#how-it-works), [Repository layout](#repository-layout), [`docs/decisions.md`](docs/decisions.md), and the Methodology section of the report |
+| How to run | [Quick start](#quick-start) |
+| Presentation | [`presentation/QuickPic_slides.pdf`](presentation/QuickPic_slides.pdf) |
+| Final report | [`paper/quickpic.pdf`](paper/quickpic.pdf) (LaTeX source alongside) |
 
 ## Highlights
 
@@ -76,7 +89,7 @@ Also evaluated on LFW (99.8 % verification), TinyFace (open-set identification o
 Requirements: [uv](https://docs.astral.sh/uv/), Node.js 20+ and [pnpm](https://pnpm.io/). Runs fully offline after setup.
 
 ```bash
-git clone https://github.com/Tanish-237/quickpic && cd quickpic
+git clone https://github.com/Tanish-237/D_TEAM_25 && cd D_TEAM_25
 make setup     # Python env (uv.lock) + frontend packages
 make models    # download pretrained face models into models/ (checksummed)
 make web       # build the frontend and serve the app on http://127.0.0.1:8000
@@ -132,6 +145,8 @@ quickpic/
 ├── experiments/           Scripts behind every number in the report → results/*.json
 ├── notebooks/             Colab notebooks for the GPU benchmarks
 ├── tools/                 Local face-labelling tool that builds the answer key
+├── dataset/               Class-photo labels (no images) and public dataset sources
+├── presentation/          Presentation slides (PDF)
 ├── tests/                 Engine unit tests (API tests live in web/attendance/tests.py)
 ├── paper/                 IEEE report (LaTeX + PDF)
 ├── docs/                  Design decisions and README screenshots
@@ -153,7 +168,7 @@ Experiments: `uv run python -m experiments.<name> --data data/class` (class-phot
 
 ## Privacy and licences
 
-- No face image is ever committed: `data/` and `models/` are git-ignored, and CI fails if an image outside `docs/assets/` is tracked. The screenshots above use invented students.
+- No face image is ever committed: `data/` and `models/` are git-ignored, [`dataset/`](dataset) holds labels only, with students pseudonymised as S01–S15, and CI fails if an image outside `docs/assets/` is tracked. The screenshots above use invented students.
 - Class-photo experiments run only on the authors' laptop and report aggregate numbers. Enrolled classmates gave permission; other people in class photos are never identified or published.
 - Code: MIT. The InsightFace models are for **non-commercial research only**; SFace and YuNet (OpenCV Zoo) are Apache-2.0/MIT. LFW, TinyFace and the ICFD sample are used for research and not redistributed.
 
