@@ -11,7 +11,7 @@ Classroom attendance from a single photograph: QuickPic finds every face, names 
 ![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)
 ![React 19](https://img.shields.io/badge/react-19-61dafb.svg)
 
-[Report (PDF)](paper/quickpic.pdf) · [Slides (PPTX)](presentation/QuickPic_slides.pptx) · [Dataset](dataset) · [Design decisions](docs/decisions.md)
+[Report (PDF)](paper/quickpic.pdf) · Slides: [PPTX](presentation/QuickPic_slides.pptx), [PDF](presentation/QuickPic_slides.pdf) · [Dataset](dataset) · [Design decisions](docs/decisions.md)
 
 IPCV course project · Section D · Team 25 · MNNIT Allahabad
 
@@ -27,7 +27,7 @@ IPCV course project · Section D · Team 25 · MNNIT Allahabad
 | Dataset(s) | [`dataset/`](dataset): hand-labelled answer key for our 10 class photos (804 faces), plus sources for LFW, TinyFace and ICFD. No face images are published (see [Privacy](#privacy-and-licences)). |
 | Implementation details | [How it works](#how-it-works), [Repository layout](#repository-layout), [`docs/decisions.md`](docs/decisions.md), and the Methodology section of the report |
 | How to run | [Quick start](#quick-start) |
-| Presentation | [`presentation/QuickPic_slides.pptx`](presentation/QuickPic_slides.pptx) |
+| Presentation | [`presentation/QuickPic_slides.pptx`](presentation/QuickPic_slides.pptx) (PowerPoint) and [`presentation/QuickPic_slides.pdf`](presentation/QuickPic_slides.pdf) |
 | Final report | [`paper/quickpic.pdf`](paper/quickpic.pdf) (LaTeX source alongside) |
 
 ## Highlights
@@ -146,7 +146,7 @@ quickpic/
 ├── notebooks/             Colab notebooks for the GPU benchmarks
 ├── tools/                 Local face-labelling tool that builds the answer key
 ├── dataset/               Class-photo labels (no images) and public dataset sources
-├── presentation/          Presentation slides (PowerPoint)
+├── presentation/          Presentation slides (PowerPoint and PDF)
 ├── tests/                 Engine unit tests (API tests live in web/attendance/tests.py)
 ├── paper/                 IEEE report (LaTeX + PDF)
 ├── docs/                  Design decisions and README screenshots
